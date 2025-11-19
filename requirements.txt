@@ -1,7 +1,25 @@
+# Core Streamlit dependencies
 streamlit>=1.28.0
 pandas>=2.0.0
 numpy>=1.24.0
+
+# Scientific computing
 scipy>=1.11.0
-plotly>=5.17.0
-pyyaml>=6.0
 matplotlib>=3.7.0
+
+# Visualization
+plotly>=5.17.0
+
+# Configuration
+pyyaml>=6.0
+
+# Statistical analysis (used in prod_fcst_functions.py)
+statsmodels>=0.14.0
+ruptures>=1.1.8
+
+# Probabilistic modeling (used in prod_fcst_functions.py)
+pymc>=5.9.0
+pytensor>=2.17.0
+
+# Decline curve analysis
+petbox-dca>=1.0.0

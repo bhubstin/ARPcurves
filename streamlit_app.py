@@ -576,11 +576,17 @@ elif page == "📈 Visualize Results":
         # Get result for selected well/measure
         result_row = well_results[well_results['Measure'] == selected_measure].iloc[0]
         
-        # Get actual production data
+        # Get actual production data - use the LAST production date, not start date
+        # Get last date from the well list
+        well_list_row = well_list_df[
+            (well_list_df['WellID'] == int(selected_well)) & 
+            (well_list_df['Measure'] == selected_measure)
+        ].iloc[0]
+        
         actual_data = csv_loader.get_well_production(
             wellid=int(selected_well),
             measure=selected_measure,
-            last_prod_date=result_row['StartDate'],
+            last_prod_date=well_list_row['LastProdDate'],
             fit_months=120
         )
         

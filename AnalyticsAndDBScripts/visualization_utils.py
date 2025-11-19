@@ -39,6 +39,19 @@ def plot_decline_curve(
     wellid = int(result_row['WellID'])
     measure = result_row['Measure']
     
+    # VALIDATION: Check if Q3 matches first actual data point
+    first_actual = actual_data['Value'].iloc[0]
+    qi_fit = result_row['Q3']
+    error_pct = abs(qi_fit - first_actual) / first_actual * 100
+    
+    if error_pct > 10:
+        import warnings
+        warnings.warn(
+            f"WARNING: Well {wellid} {measure} - Fitted Qi ({qi_fit:.2f}) differs from "
+            f"first actual rate ({first_actual:.2f}) by {error_pct:.1f}%. "
+            f"This indicates a fitting issue. The curve may not start at the correct point."
+        )
+    
     # Generate forecast
     t_months = np.arange(0, len(actual_data) + forecast_months)
     def_val = 0.06 if measure == 'GAS' else 0.08

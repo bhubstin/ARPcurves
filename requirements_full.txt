@@ -1,0 +1,72 @@
+# === Core scientific stack ===
+numpy
+pandas
+scipy
+matplotlib
+seaborn
+plotly
+tqdm
+openpyxl
+lxml
+
+# === Machine learning and statistics ===
+scikit-learn
+xgboost
+shap
+joblib
+statsmodels
+ruptures
+numba
+
+# === Probabilistic modeling ===
+pymc
+arviz
+jax
+jaxlib
+blackjax
+
+# === Geospatial analysis ===
+geopandas
+shapely
+pyproj
+fiona
+rasterio
+rtree
+geopy
+folium
+branca
+dask_geopandas
+pyogrio
+
+# === Dask & parallel processing ===
+dask[dataframe,distributed,diagnostics]
+loky
+
+# === Data I/O and database connectivity ===
+requests
+sqlalchemy
+pyodbc
+psycopg2-binary
+yfinance
+
+# === Web & UI apps ===
+dash
+streamlit
+voila
+ipywidgets
+
+# === Jupyter environment ===
+jupyterlab
+ipython
+ipykernel
+
+# === Code quality and dev tools ===
+autopep8
+flake8
+black
+pre-commit
+line_profiler
+memory_profiler
+
+# === Custom or external packages ===
+petbox-dca

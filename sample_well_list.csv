@@ -1,0 +1,5 @@
+WellID,Measure,LastProdDate,FitMethod
+12345678901,OIL,2024-10-01,monte_carlo
+12345678901,GAS,2024-10-01,curve_fit
+98765432109,OIL,2024-10-01,curve_fit
+98765432109,GAS,2024-10-01,curve_fit

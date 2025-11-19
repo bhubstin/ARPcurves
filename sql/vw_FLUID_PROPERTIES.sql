@@ -1,0 +1,56 @@
+USE [Analytics]
+GO
+
+/****** Object:  View [dbo].[vw_FLUID_PROPERTIES]    Script Date: 2/21/2024 12:54:05 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+
+CREATE OR ALTER VIEW [dbo].[vw_FLUID_PROPERTIES] AS
+WITH PROD_PIVOT_CTE AS (
+	SELECT
+		WellID,
+		Date,
+		[OIL], 
+		[GAS], 
+		[WATER],
+		SUM(CASE WHEN NULLIF(OIL, 0.0) > 0.0 AND NULLIF(GAS, 0.0) > 0.0 THEN 1 ELSE 0 END) OVER (PARTITION BY WellID ORDER BY Date) AS MonthRankAsc,
+		SUM(CASE WHEN NULLIF(OIL, 0.0) > 0.0 AND NULLIF(WATER, 0.0) > 0.0 THEN 1 ELSE 0 END) OVER (PARTITION BY WellID ORDER BY Date DESC) AS MonthRankDesc
+	FROM  (
+			SELECT	WellID, Date, Measure, Value
+			FROM	dbo.PRODUCTION
+			WHERE	Measure IN ('OIL', 'GAS', 'WATER')
+			AND		SourceRank = 1
+			AND		Cadence = 'MONTHLY'
+			AND		Value > 0.0
+	) AS SourceData
+	PIVOT (
+			SUM(Value)
+			FOR Measure IN ([OIL], [GAS], [WATER])
+	) AS P
+),
+GOR_CTE AS (
+	SELECT		WellID, (SUM(GAS) * 1000.0) / SUM(OIL) AS GOR
+	FROM		PROD_PIVOT_CTE
+	WHERE		MonthRankAsc < 4
+	GROUP BY	WellID
+),
+WTR_CUT_CTE AS (
+	SELECT		WellID, SUM(WATER) / (SUM(OIL) + SUM(WATER)) AS WTR_CUT,
+				SUM(WATER) / (SUM(GAS) / 1000) AS WTR_YIELD
+	FROM		PROD_PIVOT_CTE
+	WHERE		MonthRankDesc < 7
+	AND			MonthRankAsc > 3
+	GROUP BY	WellID
+)
+SELECT		ISNULL(G.WellID, W.WellID) AS WellID, G.GOR, W.WTR_CUT, W.WTR_YIELD
+FROM		GOR_CTE G
+FULL JOIN	WTR_CUT_CTE W 
+ON			G.WellID = W.WellID	
+;
+GO
+
+

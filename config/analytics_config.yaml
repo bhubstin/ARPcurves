@@ -89,13 +89,13 @@ decline_curve:
         max: 1.2
 
   - name: bourdet_outliers
-    setting: True
+    setting: False  # DISABLED - was removing good data points
     smoothing_factor: 0.05  # Smoothing factor in units of log-cycle fractions
     z_threshold: 2.0
     min_array_size: 6
 
   - name: detect_changepoints
-    setting: True
+    setting: False  # DISABLED - not needed for this dataset
     penalty: 1.0
     fit_segment: last  # 'first', 'last', or 'all'
 
@@ -106,7 +106,7 @@ decline_curve:
     max_months: 60
 
   - name: smoothing
-    factor: 2
+    factor: 0  # DISABLED - was causing offset at first point
 
   - name: method
     setting: monte_carlo  # 'curve_fit', 'differential_evolution' or 'monte_carlo'. Default is 'curve_fit'. 'monte_carlo' is the most robust but slowest method (1-3 secs per forecast).

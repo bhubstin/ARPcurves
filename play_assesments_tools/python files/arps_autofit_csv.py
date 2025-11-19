@@ -420,12 +420,34 @@ def fit_aggregate_arps_curve(
         Dei_fit, b_fit = optimized_params
         qi_fit = Qi_guess
         
+        # CRITICAL ASSERTION: Verify Qi was not accidentally optimized
+        assert qi_fit == Qi_guess, f"CRITICAL ERROR: Qi was modified! Expected {Qi_guess}, got {qi_fit}"
+        
         # Calculate predicted values
         q_pred = fcst.varps_decline(1, 1, qi_fit, Dei_fit, def_dict[measure], b_fit, t_act, 0, 0)[3]
         
         with warnings.catch_warnings():
             warnings.simplefilter('ignore')
             r_squared, rmse, mae = fcst.calc_goodness_of_fit(q_act, q_pred)
+        
+        # CRITICAL VALIDATION: Ensure ARPS curve is correct
+        import AnalyticsAndDBScripts.arps_validation as arps_val
+        validation_results = arps_val.validate_arps_fit(
+            t_act, q_act, q_pred, qi_fit, Dei_fit, b_fit, def_dict[measure],
+            well_id='AGGREGATE', phase=measure, strict_mode=False
+        )
+        
+        # Check for critical validation failures
+        if not validation_results['tests'].get('time_starts_at_zero', True):
+            print(f"  ⚠️  VALIDATION WARNING: Time array does not start at zero for {measure}")
+        
+        first_point_test = validation_results['tests'].get('first_point_alignment', {})
+        if isinstance(first_point_test, dict) and not first_point_test.get('pass', True):
+            error_pct = first_point_test.get('error_pct', 0)
+            print(f"  ⚠️  VALIDATION WARNING: First point mismatch for {measure}: {error_pct:.1f}% error")
+            print(f"      q_actual(0)={first_point_test.get('q_actual_0', 0):.2f}, "
+                  f"q_pred(0)={first_point_test.get('q_pred_0', 0):.2f}, "
+                  f"Qi_fit={first_point_test.get('qi_fit', 0):.2f}")
         
         # Store aggregated data for visualization
         aggregated['predicted'] = q_pred

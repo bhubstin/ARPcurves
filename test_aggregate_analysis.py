@@ -65,10 +65,19 @@ if result_oil is not None:
     print(f"   WellID: {result_oil[0]}")
     print(f"   Measure: {result_oil[1]}")
     print(f"   Data points: {result_oil[2]}")
-    print(f"   Qi: {result_oil[8]:.2f}")
+    print(f"   Qi_guess: {result_oil[7]:.2f}")
+    print(f"   Qi_fit: {result_oil[8]:.2f}")
     print(f"   Dei: {result_oil[9]:.3f}")
     print(f"   b-factor: {result_oil[10]:.3f}")
     print(f"   R²: {result_oil[11]:.3f}")
+    print()
+    
+    # CRITICAL VALIDATION: Check Qi was not optimized
+    if abs(result_oil[7] - result_oil[8]) > 0.01:
+        print("   ❌ VALIDATION FAILED: Qi was optimized!")
+        print(f"      Qi_guess={result_oil[7]:.2f}, Qi_fit={result_oil[8]:.2f}")
+    else:
+        print("   ✅ VALIDATION PASSED: Qi correctly fixed at first point")
     print()
     
     # Validate aggregated data
@@ -101,10 +110,19 @@ if result_gas is not None:
     print(f"   WellID: {result_gas[0]}")
     print(f"   Measure: {result_gas[1]}")
     print(f"   Data points: {result_gas[2]}")
-    print(f"   Qi: {result_gas[8]:.2f}")
+    print(f"   Qi_guess: {result_gas[7]:.2f}")
+    print(f"   Qi_fit: {result_gas[8]:.2f}")
     print(f"   Dei: {result_gas[9]:.3f}")
     print(f"   b-factor: {result_gas[10]:.3f}")
     print(f"   R²: {result_gas[11]:.3f}")
+    print()
+    
+    # CRITICAL VALIDATION: Check Qi was not optimized
+    if abs(result_gas[7] - result_gas[8]) > 0.01:
+        print("   ❌ VALIDATION FAILED: Qi was optimized!")
+        print(f"      Qi_guess={result_gas[7]:.2f}, Qi_fit={result_gas[8]:.2f}")
+    else:
+        print("   ✅ VALIDATION PASSED: Qi correctly fixed at first point")
     print()
     
     # Validate aggregated data
@@ -138,6 +156,23 @@ if result_oil and result_oil[0] == 'AGGREGATE':
     checks_passed += 1
 else:
     print("❌ WellID not set to 'AGGREGATE'")
+
+# Check 2b: CRITICAL - Qi was not optimized
+if result_oil and result_gas:
+    oil_qi_match = abs(result_oil[7] - result_oil[8]) < 0.01
+    gas_qi_match = abs(result_gas[7] - result_gas[8]) < 0.01
+    if oil_qi_match and gas_qi_match:
+        print("✅ CRITICAL: Qi correctly fixed (not optimized) for both OIL and GAS")
+        checks_passed += 1
+    else:
+        print("❌ CRITICAL: Qi was optimized (ARPS theory violation!)")
+        if not oil_qi_match:
+            print(f"   OIL: Qi_guess={result_oil[7]:.2f}, Qi_fit={result_oil[8]:.2f}")
+        if not gas_qi_match:
+            print(f"   GAS: Qi_guess={result_gas[7]:.2f}, Qi_fit={result_gas[8]:.2f}")
+else:
+    print("❌ Cannot validate Qi (missing results)")
+total_checks += 1
 
 # Check 3: R² values are reasonable
 if result_oil and result_gas and result_oil[11] > 0.5 and result_gas[11] > 0.5:

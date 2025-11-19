@@ -30,43 +30,235 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS for better styling
+# Custom CSS - Professional Corporate Design (ExxonMobil-inspired)
 st.markdown("""
-    <style>
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: bold;
-        color: #1f77b4;
-        text-align: center;
-        padding: 1rem 0;
+<style>
+    /* Import ExxonMobil-style fonts */
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&display=swap');
+    
+    /* Global styles */
+    * {
+        font-family: 'Open Sans', 'Helvetica Neue', Arial, sans-serif;
     }
-    .sub-header {
-        font-size: 1.2rem;
-        color: #666;
-        text-align: center;
+    
+    .stApp {
+        background: #f8f9fb;
+    }
+    
+    /* Main content area */
+    .main .block-container {
+        padding-top: 2rem;
         padding-bottom: 2rem;
+        max-width: 1400px;
     }
+    
+    /* Headers - Professional Blue Palette */
+    .main-header {
+        font-family: 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+        font-size: 3rem;
+        font-weight: 300;
+        color: #103766;
+        text-align: center;
+        padding: 2rem 0 0.5rem 0;
+        margin-bottom: 0.5rem;
+        letter-spacing: -1px;
+        text-shadow: none;
+        line-height: 1.2;
+    }
+    
+    .sub-header {
+        font-family: 'Open Sans', Arial, sans-serif;
+        font-size: 1rem;
+        color: #5a6c7d;
+        text-align: center;
+        margin-bottom: 2.5rem;
+        font-weight: 400;
+        letter-spacing: 0.3px;
+        line-height: 1.5;
+    }
+    
+    /* Sidebar styling - Professional Navy */
+    [data-testid="stSidebar"] {
+        background: linear-gradient(180deg, #103766 0%, #1a4d7a 100%);
+    }
+    
+    [data-testid="stSidebar"] * {
+        color: #ffffff !important;
+    }
+    
+    [data-testid="stSidebar"] .stRadio > label {
+        font-weight: 600;
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Buttons - ExxonMobil style */
+    .stButton > button {
+        font-family: 'Open Sans', Arial, sans-serif;
+        font-weight: 600;
+        border-radius: 2px;
+        border: none;
+        padding: 0.75rem 2rem;
+        transition: all 0.3s ease;
+        text-transform: none;
+        letter-spacing: 0.5px;
+        font-size: 0.95rem;
+    }
+    
+    .stButton > button[kind="primary"] {
+        background: linear-gradient(135deg, #288cfa 0%, #1a6fd9 100%);
+        box-shadow: 0 2px 8px rgba(40, 140, 250, 0.25);
+    }
+    
+    .stButton > button[kind="primary"]:hover {
+        background: linear-gradient(135deg, #1a6fd9 0%, #103766 100%);
+        box-shadow: 0 4px 12px rgba(40, 140, 250, 0.35);
+        transform: translateY(-1px);
+    }
+    
+    /* Metrics */
+    [data-testid="stMetricValue"] {
+        font-family: 'Inter', sans-serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: #003366;
+    }
+    
+    [data-testid="stMetricLabel"] {
+        font-family: 'Inter', sans-serif;
+        font-size: 0.9rem;
+        font-weight: 500;
+        color: #5a6c7d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    /* Cards and containers */
     .metric-card {
-        background-color: #f0f2f6;
-        padding: 1rem;
-        border-radius: 0.5rem;
-        margin: 0.5rem 0;
+        background: white;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border-left: 4px solid #0066cc;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
     }
+    
+    .metric-card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        transform: translateY(-2px);
+    }
+    
+    /* Status boxes */
     .success-box {
-        background-color: #d4edda;
-        border: 1px solid #c3e6cb;
-        border-radius: 0.5rem;
-        padding: 1rem;
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        border-left: 4px solid #2e7d32;
+        border-radius: 8px;
+        padding: 1.2rem;
         margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
     }
+    
+    .warning-box {
+        background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
+        border-left: 4px solid #f57c00;
+        border-radius: 8px;
+        padding: 1.2rem;
+        margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(245, 124, 0, 0.15);
+    }
+    
     .error-box {
-        background-color: #f8d7da;
-        border: 1px solid #f5c6cb;
-        border-radius: 0.5rem;
-        padding: 1rem;
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+        border-left: 4px solid #c62828;
+        border-radius: 8px;
+        padding: 1.2rem;
         margin: 1rem 0;
+        box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
     }
-    </style>
+    
+    /* Tables */
+    .dataframe {
+        font-family: 'Inter', sans-serif;
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    }
+    
+    /* File uploader */
+    [data-testid="stFileUploader"] {
+        background: white;
+        border-radius: 8px;
+        padding: 1.5rem;
+        border: 2px dashed #0066cc;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    }
+    
+    /* Expanders */
+    .streamlit-expanderHeader {
+        font-family: 'Inter', sans-serif;
+        font-weight: 600;
+        color: #003366;
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+    }
+    
+    /* Dividers */
+    hr {
+        margin: 2rem 0;
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, #0066cc, transparent);
+    }
+    
+    /* Subheaders */
+    h2, h3 {
+        font-family: 'Inter', sans-serif;
+        color: #003366 !important;
+        font-weight: 600;
+        margin-top: 2rem;
+    }
+    
+    /* Page headers */
+    .main h1, .main h2, .main h3, .main h4, .main h5, .main h6 {
+        color: #003366 !important;
+    }
+    
+    /* Ensure all text is readable */
+    .main p, .main span, .main div, .main label {
+        color: #2c3e50 !important;
+    }
+    
+    /* Streamlit native elements */
+    .stMarkdown, .stText {
+        color: #2c3e50 !important;
+    }
+    
+    /* Info/warning/error text */
+    .stAlert p, .stAlert div {
+        color: #1a1a1a !important;
+    }
+    
+    /* Checkbox and radio labels */
+    .stCheckbox label, .stRadio label {
+        color: #2c3e50 !important;
+    }
+    
+    /* Selectbox and input labels */
+    .stSelectbox label, .stTextInput label, .stNumberInput label, .stSlider label {
+        color: #2c3e50 !important;
+    }
+    
+    /* Dataframe text */
+    .dataframe tbody tr td {
+        color: #2c3e50 !important;
+    }
+    
+    /* Expander content */
+    .streamlit-expanderContent p, .streamlit-expanderContent div {
+        color: #2c3e50 !important;
+    }
+</style>
 """, unsafe_allow_html=True)
 
 # Initialize session state
@@ -94,8 +286,8 @@ def init_session_state():
 init_session_state()
 
 # Header
-st.markdown('<div class="main-header">📈 Arps Decline Curve Analyzer</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-header">Upload CSV data and analyze production decline curves</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">Production Decline Analysis Platform</div>', unsafe_allow_html=True)
+st.markdown('<div class="sub-header">Advanced Arps Decline Curve Modeling & Forecasting</div>', unsafe_allow_html=True)
 
 # Sidebar navigation
 st.sidebar.title("Navigation")
@@ -314,6 +506,16 @@ elif page == "📊 Run Analysis":
         # Sidebar controls
         st.sidebar.header("⚙️ Analysis Parameters")
         
+        # Analysis type selector
+        analysis_type = st.sidebar.radio(
+            "Analysis Type",
+            ["Individual Wells", "Aggregate/Type Curve"],
+            index=0,
+            help="Individual: Fit each well separately. Aggregate: Average all wells and fit one curve."
+        )
+        
+        st.sidebar.markdown("---")
+        
         # Fitting method
         fit_method = st.sidebar.selectbox(
             "Fitting Method",
@@ -423,6 +625,7 @@ elif page == "📊 Run Analysis":
             spec.loader.exec_module(arps_module)
             
             process_well_csv = arps_module.process_well_csv
+            fit_aggregate_arps_curve = arps_module.fit_aggregate_arps_curve
             param_df_cols = arps_module.param_df_cols
             
             # Progress tracking
@@ -430,28 +633,66 @@ elif page == "📊 Run Analysis":
             status_text = st.empty()
             
             results = []
-            total_wells = len(well_list_df)
             
-            for idx, row in well_list_df.iterrows():
-                try:
-                    # Update progress
-                    progress = (idx + 1) / total_wells
-                    progress_bar.progress(progress)
-                    status_text.text(f"Processing {idx + 1}/{total_wells}: Well {row['WellID']} - {row['Measure']}")
+            # AGGREGATE ANALYSIS
+            if analysis_type == "Aggregate/Type Curve":
+                status_text.text("Running aggregate/type curve analysis...")
+                progress_bar.progress(0.3)
+                
+                # Load ALL production data
+                prod_df = st.session_state.csv_loader.load_production_data()
+                
+                # Run aggregate analysis for each measure
+                measures = well_list_df['Measure'].unique()
+                for measure in measures:
+                    status_text.text(f"Fitting aggregate curve for {measure}...")
                     
-                    # Process well
-                    result = process_well_csv(
-                        wellid=row['WellID'],
-                        measure=row['Measure'],
-                        last_prod_date=row['LastProdDate'],
-                        csv_loader=st.session_state.csv_loader,
-                        fit_method=fit_method
+                    result, agg_df = fit_aggregate_arps_curve(
+                        measure=measure,
+                        b_dict=arps_module.default_b_dict[measure],
+                        dei_dict=arps_module.dei_dict1,
+                        def_dict=arps_module.def_dict,
+                        min_q_dict=arps_module.min_q_dict,
+                        prod_df_all_wells=prod_df,
+                        value_col='Value',
+                        method=fit_method,
+                        trials=arps_module.trials,
+                        smoothing_factor=arps_module.smoothing_params['factor']
                     )
-                    results.append(result)
                     
-                except Exception as e:
-                    st.warning(f"⚠️ Well {row['WellID']} - {row['Measure']}: {str(e)}")
-                    continue
+                    if result is not None:
+                        results.append(result)
+                        # Store aggregated data for visualization
+                        if 'aggregate_data' not in st.session_state:
+                            st.session_state.aggregate_data = {}
+                        st.session_state.aggregate_data[measure] = agg_df
+                
+                progress_bar.progress(1.0)
+                total_wells = len(measures)
+                
+            # INDIVIDUAL WELL ANALYSIS
+            else:
+                total_wells = len(well_list_df)
+                for idx, row in well_list_df.iterrows():
+                    try:
+                        # Update progress
+                        progress = (idx + 1) / total_wells
+                        progress_bar.progress(progress)
+                        status_text.text(f"Processing {idx + 1}/{total_wells}: Well {row['WellID']} - {row['Measure']}")
+                        
+                        # Process well
+                        result = process_well_csv(
+                            wellid=row['WellID'],
+                            measure=row['Measure'],
+                            last_prod_date=row['LastProdDate'],
+                            csv_loader=st.session_state.csv_loader,
+                            fit_method=fit_method
+                        )
+                        results.append(result)
+                        
+                    except Exception as e:
+                        st.warning(f"⚠️ Well {row['WellID']} - {row['Measure']}: {str(e)}")
+                        continue
             
             # Create results DataFrame
             results_df = pd.DataFrame(results, columns=param_df_cols)
@@ -537,27 +778,40 @@ elif page == "📈 Visualize Results":
         results_df = st.session_state.results_df
         csv_loader = st.session_state.csv_loader
         
+        # Check if this is aggregate analysis
+        is_aggregate = 'AGGREGATE' in results_df['WellID'].values
+        
         # Sidebar controls
-        st.sidebar.header("🎯 Select Well")
-        
-        # Well selection
-        unique_wells = results_df['WellID'].unique()
-        selected_well = st.sidebar.selectbox(
-            "Well ID",
-            unique_wells,
-            key="viz_well_select"
-        )
-        
-        # Filter results for selected well
-        well_results = results_df[results_df['WellID'] == selected_well]
-        
-        # Measure selection
-        available_measures = well_results['Measure'].unique()
-        selected_measure = st.sidebar.selectbox(
-            "Product",
-            available_measures,
-            key="viz_measure_select"
-        )
+        if is_aggregate:
+            st.sidebar.header("🎯 Select Product")
+            # For aggregate, only select measure
+            available_measures = results_df['Measure'].unique()
+            selected_measure = st.sidebar.selectbox(
+                "Product",
+                available_measures,
+                key="viz_measure_select"
+            )
+            selected_well = 'AGGREGATE'
+        else:
+            st.sidebar.header("🎯 Select Well")
+            # Well selection
+            unique_wells = results_df['WellID'].unique()
+            selected_well = st.sidebar.selectbox(
+                "Well ID",
+                unique_wells,
+                key="viz_well_select"
+            )
+            
+            # Filter results for selected well
+            well_results = results_df[results_df['WellID'] == selected_well]
+            
+            # Measure selection
+            available_measures = well_results['Measure'].unique()
+            selected_measure = st.sidebar.selectbox(
+                "Product",
+                available_measures,
+                key="viz_measure_select"
+            )
         
         st.sidebar.markdown("---")
         
@@ -574,24 +828,39 @@ elif page == "📈 Visualize Results":
         )
         
         # Get result for selected well/measure
-        result_row = well_results[well_results['Measure'] == selected_measure].iloc[0]
+        if is_aggregate:
+            result_row = results_df[results_df['Measure'] == selected_measure].iloc[0]
+        else:
+            result_row = well_results[well_results['Measure'] == selected_measure].iloc[0]
         
-        # Get actual production data - use the LAST production date, not start date
-        # Get last date from the well list
-        well_list_row = well_list_df[
-            (well_list_df['WellID'] == int(selected_well)) & 
-            (well_list_df['Measure'] == selected_measure)
-        ].iloc[0]
-        
-        actual_data = csv_loader.get_well_production(
-            wellid=int(selected_well),
-            measure=selected_measure,
-            last_prod_date=well_list_row['LastProdDate'],
-            fit_months=120
-        )
+        # Get actual production data
+        if is_aggregate:
+            # For aggregate: use the aggregated data stored during analysis
+            if 'aggregate_data' in st.session_state and selected_measure in st.session_state.aggregate_data:
+                agg_df = st.session_state.aggregate_data[selected_measure]
+                # Also load ALL individual well data for plotting
+                prod_df = csv_loader.load_production_data()
+                all_wells_data = prod_df[prod_df['Measure'] == selected_measure].copy()
+            else:
+                st.error("Aggregate data not found. Please re-run analysis.")
+                st.stop()
+        else:
+            # For individual: get single well data
+            well_list_row = well_list_df[
+                (well_list_df['WellID'] == int(selected_well)) & 
+                (well_list_df['Measure'] == selected_measure)
+            ].iloc[0]
+            
+            actual_data = csv_loader.get_well_production(
+                wellid=int(selected_well),
+                measure=selected_measure,
+                last_prod_date=well_list_row['LastProdDate'],
+                fit_months=120
+            )
         
         # Display metrics
-        st.subheader(f"📊 Well {selected_well} - {selected_measure}")
+        title = f"📊 Aggregate Type Curve - {selected_measure}" if is_aggregate else f"📊 Well {selected_well} - {selected_measure}"
+        st.subheader(title)
         
         col1, col2, col3, col4, col5 = st.columns(5)
         
@@ -614,11 +883,21 @@ elif page == "📈 Visualize Results":
         st.markdown("---")
         
         # Generate forecast
-        t_months = np.arange(0, len(actual_data) + forecast_months)
+        if is_aggregate:
+            # For aggregate: use aggregated data length
+            t_months = np.arange(0, len(agg_df) + forecast_months)
+            start_date = agg_df['months_from_start'].min()
+            history_end = len(agg_df)
+        else:
+            # For individual: use actual data length
+            t_months = np.arange(0, len(actual_data) + forecast_months)
+            start_date = actual_data['Date'].min()
+            history_end = len(actual_data)
+        
         def_val = 0.06 if selected_measure == 'GAS' else 0.08
         
         forecast = fcst.varps_decline(
-            int(selected_well), 1,
+            1, 1,
             result_row['Q3'],
             result_row['Dei'],
             def_val,
@@ -627,12 +906,13 @@ elif page == "📈 Visualize Results":
         )
         
         # Create date range for forecast - convert to list for Plotly compatibility
-        start_date = actual_data['Date'].min()
-        forecast_dates = pd.date_range(start=start_date, periods=len(t_months), freq='MS').tolist()
-        history_end = len(actual_data)
-        
-        # Convert actual dates to list as well for consistency
-        actual_dates = actual_data['Date'].tolist()
+        if is_aggregate:
+            # For aggregate, create synthetic dates from month 0
+            forecast_dates = pd.date_range(start=pd.Timestamp('2022-01-01'), periods=len(t_months), freq='MS').tolist()
+        else:
+            forecast_dates = pd.date_range(start=start_date, periods=len(t_months), freq='MS').tolist()
+            # Convert actual dates to list as well for consistency
+            actual_dates = actual_data['Date'].tolist()
         
         # Create interactive Plotly chart
         if chart_scale in ["Linear", "Both"]:
@@ -641,14 +921,39 @@ elif page == "📈 Visualize Results":
             fig_linear = go.Figure()
             
             # Actual production
-            fig_linear.add_trace(go.Scatter(
-                x=actual_data['Date'],
-                y=actual_data['Value'],
-                mode='markers',
-                name='Actual Production',
-                marker=dict(size=8, color='#2E86AB', opacity=0.7),
-                hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
-            ))
+            if is_aggregate:
+                # Plot ALL individual wells' data points
+                for well_id in all_wells_data['WellID'].unique():
+                    well_data = all_wells_data[all_wells_data['WellID'] == well_id]
+                    fig_linear.add_trace(go.Scatter(
+                        x=well_data['Date'],
+                        y=well_data['Value'],
+                        mode='markers',
+                        name=f'Well {well_id}',
+                        marker=dict(size=6, opacity=0.4),
+                        showlegend=False,
+                        hovertemplate=f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                    ))
+                
+                # Add averaged data as a distinct trace
+                fig_linear.add_trace(go.Scatter(
+                    x=[forecast_dates[int(m)] for m in agg_df['months_from_start']],
+                    y=agg_df['avg_production'],
+                    mode='markers',
+                    name='Average Production',
+                    marker=dict(size=10, color='#2E86AB', symbol='diamond', line=dict(width=2, color='white')),
+                    hovertemplate='Month: %{x}<br>Avg Rate: %{y:.1f}<extra></extra>'
+                ))
+            else:
+                # Individual well: plot single well data
+                fig_linear.add_trace(go.Scatter(
+                    x=actual_data['Date'],
+                    y=actual_data['Value'],
+                    mode='markers',
+                    name='Actual Production',
+                    marker=dict(size=8, color='#2E86AB', opacity=0.7),
+                    hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
+                ))
             
             # Fitted curve
             fig_linear.add_trace(go.Scatter(
@@ -671,8 +976,9 @@ elif page == "📈 Visualize Results":
                     hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
                 ))
             
+            chart_title = f"Aggregate Type Curve - {selected_measure}" if is_aggregate else f"Well {selected_well} - {selected_measure} Decline Curve"
             fig_linear.update_layout(
-                title=f"Well {selected_well} - {selected_measure} Decline Curve",
+                title=chart_title,
                 xaxis_title="Date",
                 yaxis_title=f"{selected_measure} Rate (BBL/day or MCF/day)",
                 hovermode='x unified',
@@ -689,14 +995,39 @@ elif page == "📈 Visualize Results":
             fig_log = go.Figure()
             
             # Actual production
-            fig_log.add_trace(go.Scatter(
-                x=actual_data['Date'],
-                y=actual_data['Value'],
-                mode='markers',
-                name='Actual Production',
-                marker=dict(size=8, color='#2E86AB', opacity=0.7),
-                hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
-            ))
+            if is_aggregate:
+                # Plot ALL individual wells' data points
+                for well_id in all_wells_data['WellID'].unique():
+                    well_data = all_wells_data[all_wells_data['WellID'] == well_id]
+                    fig_log.add_trace(go.Scatter(
+                        x=well_data['Date'],
+                        y=well_data['Value'],
+                        mode='markers',
+                        name=f'Well {well_id}',
+                        marker=dict(size=6, opacity=0.4),
+                        showlegend=False,
+                        hovertemplate=f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                    ))
+                
+                # Add averaged data as a distinct trace
+                fig_log.add_trace(go.Scatter(
+                    x=[forecast_dates[int(m)] for m in agg_df['months_from_start']],
+                    y=agg_df['avg_production'],
+                    mode='markers',
+                    name='Average Production',
+                    marker=dict(size=10, color='#2E86AB', symbol='diamond', line=dict(width=2, color='white')),
+                    hovertemplate='Month: %{x}<br>Avg Rate: %{y:.1f}<extra></extra>'
+                ))
+            else:
+                # Individual well: plot single well data
+                fig_log.add_trace(go.Scatter(
+                    x=actual_data['Date'],
+                    y=actual_data['Value'],
+                    mode='markers',
+                    name='Actual Production',
+                    marker=dict(size=8, color='#2E86AB', opacity=0.7),
+                    hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
+                ))
             
             # Fitted curve
             fig_log.add_trace(go.Scatter(
@@ -719,8 +1050,9 @@ elif page == "📈 Visualize Results":
                     hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
                 ))
             
+            chart_title_log = f"Aggregate Type Curve - {selected_measure} (Log Scale)" if is_aggregate else f"Well {selected_well} - {selected_measure} Decline Curve (Log Scale)"
             fig_log.update_layout(
-                title=f"Well {selected_well} - {selected_measure} Decline Curve (Log Scale)",
+                title=chart_title_log,
                 xaxis_title="Date",
                 yaxis_title=f"{selected_measure} Rate (log scale)",
                 yaxis_type="log",

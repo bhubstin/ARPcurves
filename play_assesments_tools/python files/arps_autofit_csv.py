@@ -310,6 +310,138 @@ def fit_arps_curve(
     return result
 
 
+def fit_aggregate_arps_curve(
+    measure,
+    b_dict,
+    dei_dict,
+    def_dict,
+    min_q_dict,
+    prod_df_all_wells,
+    value_col,
+    method='curve_fit',
+    trials=1000,
+    smoothing_factor=2
+):
+    """
+    Fit Arps decline curve to AGGREGATED production from multiple wells.
+    
+    This creates a "type curve" by averaging production across all wells
+    by time period, then fitting one ARPS curve to the averaged data.
+    
+    Args:
+        measure: Product type (OIL, GAS, WATER)
+        b_dict: b-factor bounds and guess
+        dei_dict: Initial decline rate bounds
+        def_dict: Terminal decline rates by phase
+        min_q_dict: Abandonment rates by phase
+        prod_df_all_wells: Production DataFrame with ALL wells
+        value_col: Column name for production values
+        method: Fitting method
+        trials: Number of iterations for optimization
+        smoothing_factor: Smoothing iterations
+        
+    Returns:
+        Tuple: (result_list, aggregated_df)
+            - result_list: Fitted parameters and metrics
+            - aggregated_df: DataFrame with averaged production by month
+    """
+    
+    def dict_coalesce(dei_dict, def_dict):
+        return dei_dict.get('min', def_dict[measure])
+    
+    # Filter for this measure only
+    df = prod_df_all_wells[
+        (prod_df_all_wells[value_col] > 0) &
+        (prod_df_all_wells['Measure'] == measure)
+    ].copy()
+    
+    if df.empty:
+        return None, None
+    
+    # Normalize time: assign month index starting from earliest date across all wells
+    min_date = df['Date'].min()
+    df['months_from_start'] = ((df['Date'] - min_date).dt.days / 30.42).astype(int)
+    
+    # Average production across all wells for each month
+    # This is the key step for type curve analysis
+    aggregated = df.groupby('months_from_start').agg({
+        value_col: 'mean',  # Average production
+        'WellID': 'count'   # Number of wells contributing
+    }).reset_index()
+    
+    aggregated.rename(columns={
+        value_col: 'avg_production',
+        'WellID': 'well_count'
+    }, inplace=True)
+    
+    # Prepare fitting data
+    t_act = aggregated['months_from_start'].to_numpy()
+    q_act = aggregated['avg_production'].to_numpy()
+    arr_length = len(t_act)
+    
+    if arr_length < 3:
+        return None, aggregated
+    
+    # Apply smoothing
+    if smoothing_factor > 0:
+        q_act_series = pd.Series(q_act)
+        for i in range(smoothing_factor):
+            q_act_series = q_act_series.rolling(window=3, min_periods=1).mean()
+        q_act = q_act_series.to_numpy()
+    
+    # Qi is the first averaged production value
+    Qi_guess = q_act[0]
+    Dei_init = dei_dict['guess']
+    Dei_min = dict_coalesce(dei_dict, def_dict)
+    Dei_max = dei_dict['max']
+    b_guess = b_dict['guess']
+    b_min = min(b_dict['min'], b_dict['max'])
+    b_max = max(b_dict['min'], b_dict['max'])
+    
+    # Fit ARPS curve to aggregated data
+    try:
+        bounds = ((Dei_min, b_min), (Dei_max, b_max))
+        initial_guess = [Dei_init, b_guess]
+        config_optimize_dei_b = {
+            'optimize': ['Dei', 'b'],
+            'fixed': {'Qi': Qi_guess, 'Def': def_dict[measure]}
+        }
+        result = fcst.perform_curve_fit(
+            t_act, q_act, initial_guess, bounds,
+            config_optimize_dei_b, method=method, trials=trials
+        )
+        
+        # Handle different return formats
+        if isinstance(result, tuple):
+            optimized_params = result[0] if len(result) > 1 else result
+        else:
+            optimized_params = result
+        
+        Dei_fit, b_fit = optimized_params
+        qi_fit = Qi_guess
+        
+        # Calculate predicted values
+        q_pred = fcst.varps_decline(1, 1, qi_fit, Dei_fit, def_dict[measure], b_fit, t_act, 0, 0)[3]
+        
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            r_squared, rmse, mae = fcst.calc_goodness_of_fit(q_act, q_pred)
+        
+        # Store aggregated data for visualization
+        aggregated['predicted'] = q_pred
+        
+        result_list = [
+            'AGGREGATE', measure, arr_length, 'aggregate_fit', 'all',
+            min_date, 0, Qi_guess, qi_fit, Dei_fit, b_fit, r_squared, rmse, mae
+        ]
+        
+        return result_list, aggregated
+        
+    except Exception as e:
+        print(f"  Failed aggregate fit with error: {e}")
+        return None, aggregated
+
+
 def process_well_csv(
     wellid, 
     measure, 

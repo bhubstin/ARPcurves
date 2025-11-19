@@ -336,6 +336,8 @@ def init_session_state():
         st.session_state.selected_well = None
     if 'selected_measure' not in st.session_state:
         st.session_state.selected_measure = None
+    if 'aggregate_data' not in st.session_state:
+        st.session_state.aggregate_data = {}
 
 init_session_state()
 

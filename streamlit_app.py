@@ -399,8 +399,19 @@ elif page == "📊 Run Analysis":
         
         st.markdown("---")
         
+        # Clear cache button if analysis already complete
+        if st.session_state.analysis_complete:
+            col_btn1, col_btn2 = st.columns(2)
+            with col_btn1:
+                if st.button("🔄 Re-run Analysis", type="primary", use_container_width=True, key="rerun_btn"):
+                    st.session_state.analysis_complete = False
+                    st.session_state.results_df = None
+                    st.rerun()
+            with col_btn2:
+                st.info("Click to clear cached results and re-run with updated code")
+        
         # Run analysis button
-        if st.button("🚀 Run Analysis", type="primary", use_container_width=True):
+        if st.button("🚀 Run Analysis", type="primary", use_container_width=True, disabled=st.session_state.analysis_complete):
             
             # Import required modules
             import importlib.util

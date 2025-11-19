@@ -293,7 +293,9 @@ def fit_arps_curve(
                 q_act_series = q_act_series.rolling(window=3, min_periods=1).mean()
         
         q_act = q_act_series.to_numpy()
-        Qi_guess = np.max(q_act, initial=0)
+        # CRITICAL: Qi must be the FIRST smoothed value, not the maximum
+        # This ensures q(0) = Qi as required by ARPS theory
+        Qi_guess = q_act[0]
         
         try:
             result = auto_fit1()

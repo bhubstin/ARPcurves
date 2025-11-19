@@ -30,9 +30,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Custom CSS - Professional Corporate Design (ExxonMobil-inspired)
+# Custom CSS - Professional Corporate Design v2.0
 st.markdown("""
 <style>
+    /* Professional Blue Palette - Updated */
     /* Import ExxonMobil-style fonts */
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Open+Sans:wght@300;400;600;700&display=swap');
     
@@ -118,14 +119,14 @@ st.markdown("""
     
     /* Metrics */
     [data-testid="stMetricValue"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         font-size: 1.8rem;
         font-weight: 700;
-        color: #003366;
+        color: #103766;
     }
     
     [data-testid="stMetricLabel"] {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         font-size: 0.9rem;
         font-weight: 500;
         color: #5a6c7d;
@@ -138,7 +139,7 @@ st.markdown("""
         background: white;
         padding: 1.5rem;
         border-radius: 8px;
-        border-left: 4px solid #0066cc;
+        border-left: 4px solid #288cfa;
         box-shadow: 0 2px 8px rgba(0,0,0,0.08);
         transition: all 0.3s ease;
     }
@@ -148,32 +149,32 @@ st.markdown("""
         transform: translateY(-2px);
     }
     
-    /* Status boxes */
+    /* Status boxes - Professional palette */
     .success-box {
-        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
-        border-left: 4px solid #2e7d32;
-        border-radius: 8px;
+        background: #e8f4f8;
+        border-left: 4px solid #288cfa;
+        border-radius: 4px;
         padding: 1.2rem;
         margin: 1rem 0;
-        box-shadow: 0 2px 8px rgba(46, 125, 50, 0.15);
+        box-shadow: 0 1px 4px rgba(40, 140, 250, 0.15);
     }
     
     .warning-box {
-        background: linear-gradient(135deg, #fff8e1 0%, #ffecb3 100%);
-        border-left: 4px solid #f57c00;
-        border-radius: 8px;
+        background: #fff8e8;
+        border-left: 4px solid #ffa726;
+        border-radius: 4px;
         padding: 1.2rem;
         margin: 1rem 0;
-        box-shadow: 0 2px 8px rgba(245, 124, 0, 0.15);
+        box-shadow: 0 1px 4px rgba(255, 167, 38, 0.15);
     }
     
     .error-box {
-        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
-        border-left: 4px solid #c62828;
-        border-radius: 8px;
+        background: #ffebee;
+        border-left: 4px solid #ef5350;
+        border-radius: 4px;
         padding: 1.2rem;
         margin: 1rem 0;
-        box-shadow: 0 2px 8px rgba(198, 40, 40, 0.15);
+        box-shadow: 0 1px 4px rgba(239, 83, 80, 0.15);
     }
     
     /* Tables */
@@ -187,19 +188,19 @@ st.markdown("""
     /* File uploader */
     [data-testid="stFileUploader"] {
         background: white;
-        border-radius: 8px;
+        border-radius: 4px;
         padding: 1.5rem;
-        border: 2px dashed #0066cc;
+        border: 2px dashed #288cfa;
         box-shadow: 0 2px 8px rgba(0,0,0,0.05);
     }
     
     /* Expanders */
     .streamlit-expanderHeader {
-        font-family: 'Inter', sans-serif;
+        font-family: 'Open Sans', sans-serif;
         font-weight: 600;
-        color: #003366;
+        color: #103766;
         background: white;
-        border-radius: 8px;
+        border-radius: 4px;
         padding: 1rem;
     }
     
@@ -207,26 +208,26 @@ st.markdown("""
     hr {
         margin: 2rem 0;
         border: none;
-        height: 2px;
-        background: linear-gradient(90deg, transparent, #0066cc, transparent);
+        height: 1px;
+        background: linear-gradient(90deg, transparent, #bdc4d0, transparent);
     }
     
     /* Subheaders */
     h2, h3 {
-        font-family: 'Inter', sans-serif;
-        color: #003366 !important;
+        font-family: 'Open Sans', sans-serif;
+        color: #103766 !important;
         font-weight: 600;
         margin-top: 2rem;
     }
     
     /* Page headers */
     .main h1, .main h2, .main h3, .main h4, .main h5, .main h6 {
-        color: #003366 !important;
+        color: #103766 !important;
     }
     
-    /* Ensure all text is readable */
-    .main p, .main span, .main div, .main label {
-        color: #2c3e50 !important;
+    /* Ensure all text is readable - but don't override everything */
+    .main p {
+        color: #2c3e50;
     }
     
     /* Streamlit native elements */
@@ -234,7 +235,60 @@ st.markdown("""
         color: #2c3e50 !important;
     }
     
-    /* Info/warning/error text */
+    /* Streamlit Alert Boxes - Professional styling */
+    [data-testid="stAlertContainer"] {
+        border-radius: 4px;
+        padding: 1rem;
+        border-left-width: 4px;
+        border-left-style: solid;
+    }
+    
+    /* Info alerts */
+    [data-testid="stAlertContentInfo"] {
+        background-color: #e8f4f8 !important;
+        border-left-color: #288cfa !important;
+    }
+    
+    [data-testid="stAlertContentInfo"] p,
+    [data-testid="stAlertContentInfo"] div,
+    [data-testid="stAlertContentInfo"] li {
+        color: #103766 !important;
+    }
+    
+    /* Success alerts */
+    [data-testid="stAlertContentSuccess"] {
+        background-color: #e8f5e9 !important;
+        border-left-color: #4caf50 !important;
+    }
+    
+    [data-testid="stAlertContentSuccess"] p,
+    [data-testid="stAlertContentSuccess"] div {
+        color: #1b5e20 !important;
+    }
+    
+    /* Warning alerts */
+    [data-testid="stAlertContentWarning"] {
+        background-color: #fff8e8 !important;
+        border-left-color: #ffa726 !important;
+    }
+    
+    [data-testid="stAlertContentWarning"] p,
+    [data-testid="stAlertContentWarning"] div {
+        color: #e65100 !important;
+    }
+    
+    /* Error alerts */
+    [data-testid="stAlertContentError"] {
+        background-color: #ffebee !important;
+        border-left-color: #ef5350 !important;
+    }
+    
+    [data-testid="stAlertContentError"] p,
+    [data-testid="stAlertContentError"] div {
+        color: #c62828 !important;
+    }
+    
+    /* Info/warning/error text - legacy support */
     .stAlert p, .stAlert div {
         color: #1a1a1a !important;
     }
@@ -777,6 +831,7 @@ elif page == "📈 Visualize Results":
     else:
         results_df = st.session_state.results_df
         csv_loader = st.session_state.csv_loader
+        well_list_df = st.session_state.well_list_df
         
         # Check if this is aggregate analysis
         is_aggregate = 'AGGREGATE' in results_df['WellID'].values
@@ -907,8 +962,9 @@ elif page == "📈 Visualize Results":
         
         # Create date range for forecast - convert to list for Plotly compatibility
         if is_aggregate:
-            # For aggregate, create synthetic dates from month 0
-            forecast_dates = pd.date_range(start=pd.Timestamp('2022-01-01'), periods=len(t_months), freq='MS').tolist()
+            # For aggregate, use actual minimum date from data
+            min_date_actual = all_wells_data['Date'].min()
+            forecast_dates = pd.date_range(start=min_date_actual, periods=len(t_months), freq='MS').tolist()
         else:
             forecast_dates = pd.date_range(start=start_date, periods=len(t_months), freq='MS').tolist()
             # Convert actual dates to list as well for consistency

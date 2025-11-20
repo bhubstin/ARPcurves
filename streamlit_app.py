@@ -1151,14 +1151,27 @@ elif page == "📈 Visualize Results":
         
         # Show data table
         with st.expander("📋 View Production Data"):
-            st.dataframe(actual_data, use_container_width=True, height=300)
+            if is_aggregate:
+                st.write("**Aggregated Data (Monthly Averages):**")
+                st.dataframe(agg_df, use_container_width=True, height=300)
+                st.write("**All Wells Data:**")
+                st.dataframe(all_wells_data, use_container_width=True, height=300)
+            else:
+                st.dataframe(actual_data, use_container_width=True, height=300)
         
-        # Show all results for this well
-        with st.expander("📊 All Products for This Well"):
-            st.dataframe(
-                well_results[['Measure', 'Q3', 'Dei', 'b_factor', 'R_squared', 'RMSE']].round(3),
-                use_container_width=True
-            )
+        # Show all results
+        if is_aggregate:
+            with st.expander("📊 All Measures (Aggregate)"):
+                st.dataframe(
+                    results_df[['Measure', 'Q3', 'Dei', 'b_factor', 'R_squared', 'RMSE']].round(3),
+                    use_container_width=True
+                )
+        else:
+            with st.expander("📊 All Products for This Well"):
+                st.dataframe(
+                    well_results[['Measure', 'Q3', 'Dei', 'b_factor', 'R_squared', 'RMSE']].round(3),
+                    use_container_width=True
+                )
         
         # Next step
         st.markdown("---")

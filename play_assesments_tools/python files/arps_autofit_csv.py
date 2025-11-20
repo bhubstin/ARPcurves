@@ -347,10 +347,17 @@ def fit_aggregate_arps_curve(
     ].copy()
     
     print(f"DEBUG arps_autofit: Filtered df has {len(df)} rows for measure {measure}")
+    print(f"DEBUG arps_autofit: Date column dtype: {df['Date'].dtype}")
+    print(f"DEBUG arps_autofit: Columns: {df.columns.tolist()}")
     
     if df.empty:
         print(f"DEBUG arps_autofit: DataFrame is empty for {measure}")
         return None, None
+    
+    # Ensure Date column is datetime
+    if not pd.api.types.is_datetime64_any_dtype(df['Date']):
+        print(f"DEBUG arps_autofit: Converting Date column to datetime")
+        df['Date'] = pd.to_datetime(df['Date'])
     
     if time_normalize:
         # Time-normalize: shift each well to start at Month 0

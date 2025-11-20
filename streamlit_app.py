@@ -861,10 +861,14 @@ elif page == "📊 Run Analysis":
                 
                 # Run aggregate analysis for each measure
                 measures = well_list_df['Measure'].unique()
+                st.write(f"DEBUG: Found measures: {measures}")
+                st.write(f"DEBUG: time_normalize = {time_normalize}")
+                
                 for measure in measures:
                     status_text.text(f"Fitting aggregate curve for {measure}...")
                     
                     try:
+                        st.write(f"DEBUG: Calling fit_aggregate_arps_curve for {measure}")
                         result, agg_df = fit_aggregate_arps_curve(
                             prod_df_all_wells=prod_df,
                             measure=measure,
@@ -878,14 +882,18 @@ elif page == "📊 Run Analysis":
                             time_normalize=time_normalize
                         )
                         
+                        st.write(f"DEBUG: Result is None: {result is None}")
                         if result is not None:
+                            st.write(f"DEBUG: Appending result for {measure}")
                             results.append(result)
                             # Store aggregated data for visualization
                             if 'aggregate_data' not in st.session_state:
                                 st.session_state.aggregate_data = {}
                             st.session_state.aggregate_data[measure] = agg_df
+                        else:
+                            st.warning(f"⚠️ No result returned for {measure}")
                     except Exception as e:
-                        st.error(f"Error fitting {measure}: {str(e)}")
+                        st.error(f"❌ Error fitting {measure}: {str(e)}")
                         import traceback
                         st.code(traceback.format_exc())
                 

@@ -348,12 +348,21 @@ st.markdown('<div class="sub-header">Advanced Arps Decline Curve Modeling & Fore
 # Sidebar navigation
 st.sidebar.title("Navigation")
 
-# Use a different key for the radio button
-page = st.sidebar.radio(
-    "Go to",
-    ["📤 Upload Data", "📊 Run Analysis", "📈 Visualize Results", "💾 Export Data"],
-    key="page_selector"
-)
+# Check for auto-navigation trigger
+if 'auto_navigate_to_viz' not in st.session_state:
+    st.session_state.auto_navigate_to_viz = False
+
+# Auto-navigate to visualization if triggered
+if st.session_state.auto_navigate_to_viz:
+    page = "📈 Visualize Results"
+    st.session_state.auto_navigate_to_viz = False  # Reset flag
+else:
+    # Use a different key for the radio button
+    page = st.sidebar.radio(
+        "Go to",
+        ["📤 Upload Data", "📊 Run Analysis", "📈 Visualize Results", "💾 Export Data"],
+        key="page_selector"
+    )
 
 # Add info section in sidebar
 with st.sidebar.expander("ℹ️ About This App"):
@@ -784,12 +793,18 @@ elif page == "📊 Run Analysis":
             st.session_state.results_df = results_df
             st.session_state.analysis_complete = True
             
+            # Auto-select first well/measure for visualization
+            if len(results_df) > 0:
+                st.session_state.selected_well = results_df.iloc[0]['WellID']
+                st.session_state.selected_measure = results_df.iloc[0]['Measure']
+            
             # Clear progress
             progress_bar.empty()
             status_text.empty()
             
-            # Success message
+            # Success message with auto-navigation prompt
             st.success(f"✅ Analysis complete! Processed {len(results_df)} wells.")
+            st.balloons()  # Celebration effect!
             
             # Show summary
             st.subheader("📊 Results Summary")
@@ -824,9 +839,16 @@ elif page == "📊 Run Analysis":
                 height=400
             )
             
-            # Next step
+            # Next step - Auto-navigation button
             st.markdown("---")
-            st.info("👉 Go to **Visualize Results** in the sidebar to see decline curves.")
+            
+            col_nav1, col_nav2 = st.columns([1, 1])
+            with col_nav1:
+                if st.button("📈 View Charts Now", type="primary", use_container_width=True):
+                    st.session_state.auto_navigate_to_viz = True
+                    st.rerun()
+            with col_nav2:
+                st.info("👈 Or use sidebar to navigate")
         
         # Show existing results if available
         elif st.session_state.analysis_complete:
@@ -930,13 +952,20 @@ elif page == "📈 Visualize Results":
                 st.stop()
         else:
             # For individual: get single well data
-            well_list_row = well_list_df[
-                (well_list_df['WellID'] == int(selected_well)) & 
-                (well_list_df['Measure'] == selected_measure)
+            # Ensure WellID types match - convert both to same type
+            well_list_df_copy = well_list_df.copy()
+            well_list_df_copy['WellID'] = well_list_df_copy['WellID'].astype(type(selected_well))
+            
+            well_list_row = well_list_df_copy[
+                (well_list_df_copy['WellID'] == selected_well) & 
+                (well_list_df_copy['Measure'] == selected_measure)
             ].iloc[0]
             
+            # Convert selected_well to int for csv_loader
+            wellid_int = int(selected_well) if not isinstance(selected_well, int) else selected_well
+            
             actual_data = csv_loader.get_well_production(
-                wellid=int(selected_well),
+                wellid=wellid_int,
                 measure=selected_measure,
                 last_prod_date=well_list_row['LastProdDate'],
                 fit_months=120

@@ -346,7 +346,10 @@ def fit_aggregate_arps_curve(
         (prod_df_all_wells['Measure'] == measure)
     ].copy()
     
+    print(f"DEBUG arps_autofit: Filtered df has {len(df)} rows for measure {measure}")
+    
     if df.empty:
+        print(f"DEBUG arps_autofit: DataFrame is empty for {measure}")
         return None, None
     
     if time_normalize:
@@ -382,7 +385,10 @@ def fit_aggregate_arps_curve(
     q_act = aggregated['avg_production'].to_numpy()
     arr_length = len(t_act)
     
+    print(f"DEBUG arps_autofit: arr_length = {arr_length} for {measure}")
+    
     if arr_length < 3:
+        print(f"DEBUG arps_autofit: Not enough data points ({arr_length} < 3) for {measure}")
         return None, aggregated
     
     # Apply smoothing

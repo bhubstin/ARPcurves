@@ -362,14 +362,23 @@ def fit_aggregate_arps_curve(
     if time_normalize:
         # Time-normalize: shift each well to start at Month 0
         # This is the proper way to create type curves with staggered starts
+        print(f"DEBUG arps_autofit: Time-normalizing {len(df['WellID'].unique())} wells")
         normalized_data = []
         for well_id in df['WellID'].unique():
             well_df = df[df['WellID'] == well_id].copy()
+            print(f"DEBUG arps_autofit: Well {well_id} has {len(well_df)} rows")
             well_df = well_df.sort_values('Date')
             well_min_date = well_df['Date'].min()
             well_df['months_from_start'] = ((well_df['Date'] - well_min_date).dt.days / 30.42).astype(int)
+            print(f"DEBUG arps_autofit: Well {well_id} months_from_start range: {well_df['months_from_start'].min()} to {well_df['months_from_start'].max()}")
             normalized_data.append(well_df)
+        
+        if len(normalized_data) == 0:
+            print(f"DEBUG arps_autofit: No normalized data created!")
+            return None, None
+        
         df = pd.concat(normalized_data, ignore_index=True)
+        print(f"DEBUG arps_autofit: After concat, df has {len(df)} rows")
     else:
         # Calendar time: assign month index starting from earliest date across all wells
         min_date = df['Date'].min()

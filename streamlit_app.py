@@ -869,6 +869,7 @@ elif page == "📊 Run Analysis":
                     
                     try:
                         st.write(f"DEBUG: Calling fit_aggregate_arps_curve for {measure}")
+                        debug_container = st.expander(f"🔍 Debug info for {measure}", expanded=True)
                         result, agg_df = fit_aggregate_arps_curve(
                             prod_df_all_wells=prod_df,
                             measure=measure,
@@ -879,7 +880,8 @@ elif page == "📊 Run Analysis":
                             method=fit_method,
                             trials=arps_module.trials,
                             smoothing_factor=arps_module.smoothing_params['factor'],
-                            time_normalize=time_normalize
+                            time_normalize=time_normalize,
+                            debug_output=debug_container
                         )
                         
                         st.write(f"DEBUG: Result is None: {result is None}")

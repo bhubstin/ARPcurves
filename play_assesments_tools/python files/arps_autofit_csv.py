@@ -312,7 +312,7 @@ def fit_arps_curve(
 
 def fit_aggregate_arps_curve(
     prod_df_all_wells, measure, value_col, dei_dict, def_dict, b_dict,
-    method='curve_fit', trials=100, smoothing_factor=0, time_normalize=False
+    method='curve_fit', trials=100, smoothing_factor=0, time_normalize=False, debug_output=None
 ):
     """
     Fit an aggregate ARPS curve by averaging production across all wells.
@@ -330,12 +330,18 @@ def fit_aggregate_arps_curve(
         trials: Number of iterations for optimization
         smoothing_factor: Smoothing iterations
         time_normalize: If True, shift each well to start at Month 0 before aggregating
+        debug_output: Streamlit container for debug messages
         
     Returns:
         Tuple: (result_list, aggregated_df)
             - result_list: Fitted parameters and metrics
             - aggregated_df: DataFrame with averaged production by month
     """
+    
+    def debug_msg(msg):
+        if debug_output is not None:
+            debug_output.write(msg)
+        print(msg)
     
     def dict_coalesce(dei_dict, def_dict):
         return dei_dict.get('min', def_dict[measure])
@@ -346,39 +352,39 @@ def fit_aggregate_arps_curve(
         (prod_df_all_wells['Measure'] == measure)
     ].copy()
     
-    print(f"DEBUG arps_autofit: Filtered df has {len(df)} rows for measure {measure}")
-    print(f"DEBUG arps_autofit: Date column dtype: {df['Date'].dtype}")
-    print(f"DEBUG arps_autofit: Columns: {df.columns.tolist()}")
+    debug_msg(f"🔍 Filtered df has {len(df)} rows for measure {measure}")
+    debug_msg(f"🔍 Date column dtype: {df['Date'].dtype}")
+    debug_msg(f"🔍 Columns: {df.columns.tolist()}")
     
     if df.empty:
-        print(f"DEBUG arps_autofit: DataFrame is empty for {measure}")
+        debug_msg(f"❌ DataFrame is empty for {measure}")
         return None, None
     
     # Ensure Date column is datetime
     if not pd.api.types.is_datetime64_any_dtype(df['Date']):
-        print(f"DEBUG arps_autofit: Converting Date column to datetime")
+        debug_msg(f"🔄 Converting Date column to datetime")
         df['Date'] = pd.to_datetime(df['Date'])
     
     if time_normalize:
         # Time-normalize: shift each well to start at Month 0
         # This is the proper way to create type curves with staggered starts
-        print(f"DEBUG arps_autofit: Time-normalizing {len(df['WellID'].unique())} wells")
+        debug_msg(f"⏱️ Time-normalizing {len(df['WellID'].unique())} wells")
         normalized_data = []
         for well_id in df['WellID'].unique():
             well_df = df[df['WellID'] == well_id].copy()
-            print(f"DEBUG arps_autofit: Well {well_id} has {len(well_df)} rows")
+            debug_msg(f"  Well {well_id}: {len(well_df)} rows")
             well_df = well_df.sort_values('Date')
             well_min_date = well_df['Date'].min()
             well_df['months_from_start'] = ((well_df['Date'] - well_min_date).dt.days / 30.42).astype(int)
-            print(f"DEBUG arps_autofit: Well {well_id} months_from_start range: {well_df['months_from_start'].min()} to {well_df['months_from_start'].max()}")
+            debug_msg(f"  Well {well_id} months range: {well_df['months_from_start'].min()} to {well_df['months_from_start'].max()}")
             normalized_data.append(well_df)
         
         if len(normalized_data) == 0:
-            print(f"DEBUG arps_autofit: No normalized data created!")
+            debug_msg(f"❌ No normalized data created!")
             return None, None
         
         df = pd.concat(normalized_data, ignore_index=True)
-        print(f"DEBUG arps_autofit: After concat, df has {len(df)} rows")
+        debug_msg(f"✅ After concat: {len(df)} rows")
     else:
         # Calendar time: assign month index starting from earliest date across all wells
         min_date = df['Date'].min()
@@ -401,10 +407,10 @@ def fit_aggregate_arps_curve(
     q_act = aggregated['avg_production'].to_numpy()
     arr_length = len(t_act)
     
-    print(f"DEBUG arps_autofit: arr_length = {arr_length} for {measure}")
+    debug_msg(f"📊 Array length = {arr_length} for {measure}")
     
     if arr_length < 3:
-        print(f"DEBUG arps_autofit: Not enough data points ({arr_length} < 3) for {measure}")
+        debug_msg(f"❌ Not enough data points ({arr_length} < 3) for {measure}")
         return None, aggregated
     
     # Apply smoothing

@@ -365,6 +365,9 @@ def fit_aggregate_arps_curve(
         debug_msg(f"🔄 Converting Date column to datetime")
         df['Date'] = pd.to_datetime(df['Date'])
     
+    # Get min_date for result metadata (before any transformations)
+    min_date = df['Date'].min()
+    
     if time_normalize:
         # Time-normalize: shift each well to start at Month 0
         # This is the proper way to create type curves with staggered starts
@@ -387,7 +390,6 @@ def fit_aggregate_arps_curve(
         debug_msg(f"✅ After concat: {len(df)} rows")
     else:
         # Calendar time: assign month index starting from earliest date across all wells
-        min_date = df['Date'].min()
         df['months_from_start'] = ((df['Date'] - min_date).dt.days / 30.42).astype(int)
     
     # Average production across all wells for each month
@@ -491,9 +493,11 @@ def fit_aggregate_arps_curve(
         return result_list, aggregated
         
     except Exception as e:
-        print(f"  ❌ EXCEPTION in aggregate fit for {measure}: {e}")
+        error_msg = f"❌ EXCEPTION in aggregate fit for {measure}: {e}"
+        debug_msg(error_msg)
         import traceback
-        print(traceback.format_exc())
+        tb = traceback.format_exc()
+        debug_msg(f"Traceback:\n{tb}")
         return None, aggregated
 
 

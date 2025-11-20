@@ -892,6 +892,8 @@ elif page == "📊 Run Analysis":
                             if 'aggregate_data' not in st.session_state:
                                 st.session_state.aggregate_data = {}
                             st.session_state.aggregate_data[measure] = agg_df
+                            # Store time_normalize flag for visualization
+                            st.session_state.time_normalize = time_normalize
                         else:
                             st.warning(f"⚠️ No result returned for {measure}")
                     except Exception as e:
@@ -1220,15 +1222,62 @@ elif page == "📈 Visualize Results":
             t_months, 0, 0
         )
         
-        # Create date range for forecast - convert to list for Plotly compatibility
+        # Create x-axis values for forecast - handle time-normalized vs calendar time
         if is_aggregate:
-            # For aggregate, use actual minimum date from data
-            min_date_actual = all_wells_data['Date'].min()
-            forecast_dates = pd.date_range(start=min_date_actual, periods=len(t_months), freq='MS').tolist()
+            # Check if time normalization was used
+            use_time_normalize = st.session_state.get('time_normalize', False)
+            
+            if use_time_normalize:
+                # TIME-NORMALIZED: Use months from start (0, 1, 2, ..., N)
+                # History ends at the maximum normalized month in aggregated data
+                max_month_normalized = agg_df['months_from_start'].max()
+                
+                # Prepare individual well data with normalized months
+                all_wells_data_historical = all_wells_data.copy()
+                # Calculate normalized months for each well
+                normalized_wells = []
+                for well_id in all_wells_data_historical['WellID'].unique():
+                    well_df = all_wells_data_historical[all_wells_data_historical['WellID'] == well_id].copy()
+                    well_df = well_df.sort_values('Date')
+                    well_min_date = well_df['Date'].min()
+                    well_df['months_from_start'] = ((well_df['Date'] - well_min_date).dt.days / 30.42).astype(int)
+                    # Only keep data up to the max normalized month
+                    well_df = well_df[well_df['months_from_start'] <= max_month_normalized]
+                    normalized_wells.append(well_df)
+                all_wells_data_historical = pd.concat(normalized_wells, ignore_index=True)
+                
+                # X-axis is normalized months
+                forecast_x_values = t_months
+                x_axis_label = "Months from First Production"
+                
+            else:
+                # CALENDAR TIME: Use actual dates
+                max_date_actual = all_wells_data['Date'].max()
+                min_date_actual = all_wells_data['Date'].min()
+                
+                # All actual data is historical
+                all_wells_data_historical = all_wells_data.copy()
+                
+                # Create forecast dates
+                forecast_dates = pd.date_range(start=min_date_actual, periods=len(t_months), freq='MS').tolist()
+                
+                # Find where history ends in calendar time
+                history_end_date_index = None
+                for i, date in enumerate(forecast_dates):
+                    if date <= max_date_actual:
+                        history_end_date_index = i
+                
+                if history_end_date_index is not None:
+                    history_end = history_end_date_index + 1
+                
+                forecast_x_values = forecast_dates
+                x_axis_label = "Date"
         else:
+            # Individual well: always use calendar dates
             forecast_dates = pd.date_range(start=start_date, periods=len(t_months), freq='MS').tolist()
-            # Convert actual dates to list as well for consistency
             actual_dates = actual_data['Date'].tolist()
+            forecast_x_values = forecast_dates
+            x_axis_label = "Date"
         
         # Create interactive Plotly chart
         if chart_scale in ["Linear", "Both"]:
@@ -1238,17 +1287,25 @@ elif page == "📈 Visualize Results":
             
             # Actual production
             if is_aggregate:
-                # Plot ALL individual wells' data points
-                for well_id in all_wells_data['WellID'].unique():
-                    well_data = all_wells_data[all_wells_data['WellID'] == well_id]
+                # Plot individual wells' data points (ONLY historical data, not forecast period)
+                use_time_normalize = st.session_state.get('time_normalize', False)
+                for well_id in all_wells_data_historical['WellID'].unique():
+                    well_data = all_wells_data_historical[all_wells_data_historical['WellID'] == well_id]
+                    if use_time_normalize:
+                        x_data = well_data['months_from_start']
+                        hover_template = f'Well {well_id}<br>Month: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                    else:
+                        x_data = well_data['Date']
+                        hover_template = f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                    
                     fig_linear.add_trace(go.Scatter(
-                        x=well_data['Date'],
+                        x=x_data,
                         y=well_data['Value'],
                         mode='markers',
                         name=f'Well {well_id}',
                         marker=dict(size=6, opacity=0.3),
                         showlegend=False,
-                        hovertemplate=f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                        hovertemplate=hover_template
                     ))
                 
                 # NOTE: Averaged data points removed - the fitted ARPS curve represents the average
@@ -1265,30 +1322,31 @@ elif page == "📈 Visualize Results":
                 ))
             
             # Fitted curve
+            hover_label = 'Month' if (is_aggregate and st.session_state.get('time_normalize', False)) else 'Date'
             fig_linear.add_trace(go.Scatter(
-                x=forecast_dates[:history_end],
+                x=forecast_x_values[:history_end],
                 y=forecast[3][:history_end],
                 mode='lines',
                 name='Arps Fit (History)',
                 line=dict(width=3, color='#A23B72'),
-                hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
+                hovertemplate=f'{hover_label}: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
             ))
             
             # Forecast
             if show_forecast:
                 fig_linear.add_trace(go.Scatter(
-                    x=forecast_dates[history_end:],
+                    x=forecast_x_values[history_end:],
                     y=forecast[3][history_end:],
                     mode='lines',
                     name='Arps Forecast (Future)',
                     line=dict(width=3, color='#F18F01', dash='dash'),
-                    hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
+                    hovertemplate=f'{hover_label}: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
                 ))
             
             chart_title = f"Aggregate Type Curve - {selected_measure}" if is_aggregate else f"Well {selected_well} - {selected_measure} Decline Curve"
             fig_linear.update_layout(
                 title=chart_title,
-                xaxis_title="Date",
+                xaxis_title=x_axis_label if is_aggregate else "Date",
                 yaxis_title=f"{selected_measure} Rate (BBL/day or MCF/day)",
                 hovermode='x unified',
                 height=500,
@@ -1305,17 +1363,25 @@ elif page == "📈 Visualize Results":
             
             # Actual production
             if is_aggregate:
-                # Plot ALL individual wells' data points
-                for well_id in all_wells_data['WellID'].unique():
-                    well_data = all_wells_data[all_wells_data['WellID'] == well_id]
+                # Plot individual wells' data points (ONLY historical data, not forecast period)
+                use_time_normalize = st.session_state.get('time_normalize', False)
+                for well_id in all_wells_data_historical['WellID'].unique():
+                    well_data = all_wells_data_historical[all_wells_data_historical['WellID'] == well_id]
+                    if use_time_normalize:
+                        x_data = well_data['months_from_start']
+                        hover_template = f'Well {well_id}<br>Month: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                    else:
+                        x_data = well_data['Date']
+                        hover_template = f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                    
                     fig_log.add_trace(go.Scatter(
-                        x=well_data['Date'],
+                        x=x_data,
                         y=well_data['Value'],
                         mode='markers',
                         name=f'Well {well_id}',
                         marker=dict(size=6, opacity=0.4),
                         showlegend=False,
-                        hovertemplate=f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
+                        hovertemplate=hover_template
                     ))
             else:
                 # Individual well: plot single well data
@@ -1329,30 +1395,31 @@ elif page == "📈 Visualize Results":
                 ))
             
             # Fitted curve
+            hover_label = 'Month' if (is_aggregate and st.session_state.get('time_normalize', False)) else 'Date'
             fig_log.add_trace(go.Scatter(
-                x=forecast_dates[:history_end],
+                x=forecast_x_values[:history_end],
                 y=forecast[3][:history_end],
                 mode='lines',
                 name='Arps Fit (History)',
                 line=dict(width=3, color='#A23B72'),
-                hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
+                hovertemplate=f'{hover_label}: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
             ))
             
             # Forecast
             if show_forecast:
                 fig_log.add_trace(go.Scatter(
-                    x=forecast_dates[history_end:],
+                    x=forecast_x_values[history_end:],
                     y=forecast[3][history_end:],
                     mode='lines',
                     name='Arps Forecast (Future)',
                     line=dict(width=3, color='#F18F01', dash='dash'),
-                    hovertemplate='Date: %{x}<br>Rate: %{y:.1f}<extra></extra>'
+                    hovertemplate=f'{hover_label}: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
                 ))
             
             chart_title_log = f"Aggregate Type Curve - {selected_measure} (Log Scale)" if is_aggregate else f"Well {selected_well} - {selected_measure} Decline Curve (Log Scale)"
             fig_log.update_layout(
                 title=chart_title_log,
-                xaxis_title="Date",
+                xaxis_title=x_axis_label if is_aggregate else "Date",
                 yaxis_title=f"{selected_measure} Rate (log scale)",
                 yaxis_type="log",
                 hovermode='x unified',

@@ -864,25 +864,30 @@ elif page == "📊 Run Analysis":
                 for measure in measures:
                     status_text.text(f"Fitting aggregate curve for {measure}...")
                     
-                    result, agg_df = fit_aggregate_arps_curve(
-                        prod_df_all_wells=prod_df,
-                        measure=measure,
-                        value_col='Value',
-                        dei_dict=arps_module.dei_dict1,
-                        def_dict=arps_module.def_dict,
-                        b_dict=arps_module.default_b_dict[measure],
-                        method=fit_method,
-                        trials=arps_module.trials,
-                        smoothing_factor=arps_module.smoothing_params['factor'],
-                        time_normalize=time_normalize
-                    )
-                    
-                    if result is not None:
-                        results.append(result)
-                        # Store aggregated data for visualization
-                        if 'aggregate_data' not in st.session_state:
-                            st.session_state.aggregate_data = {}
-                        st.session_state.aggregate_data[measure] = agg_df
+                    try:
+                        result, agg_df = fit_aggregate_arps_curve(
+                            prod_df_all_wells=prod_df,
+                            measure=measure,
+                            value_col='Value',
+                            dei_dict=arps_module.dei_dict1,
+                            def_dict=arps_module.def_dict,
+                            b_dict=arps_module.default_b_dict[measure],
+                            method=fit_method,
+                            trials=arps_module.trials,
+                            smoothing_factor=arps_module.smoothing_params['factor'],
+                            time_normalize=time_normalize
+                        )
+                        
+                        if result is not None:
+                            results.append(result)
+                            # Store aggregated data for visualization
+                            if 'aggregate_data' not in st.session_state:
+                                st.session_state.aggregate_data = {}
+                            st.session_state.aggregate_data[measure] = agg_df
+                    except Exception as e:
+                        st.error(f"Error fitting {measure}: {str(e)}")
+                        import traceback
+                        st.code(traceback.format_exc())
                 
                 progress_bar.progress(1.0)
                 total_wells = len(measures)

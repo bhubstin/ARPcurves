@@ -1234,13 +1234,14 @@ elif page == "📈 Visualize Results":
                 
                 # Prepare individual well data with normalized months
                 all_wells_data_historical = all_wells_data.copy()
-                # Calculate normalized months for each well
+                # Calculate normalized months for each well (keep fractional for day-level variation)
                 normalized_wells = []
                 for well_id in all_wells_data_historical['WellID'].unique():
                     well_df = all_wells_data_historical[all_wells_data_historical['WellID'] == well_id].copy()
                     well_df = well_df.sort_values('Date')
                     well_min_date = well_df['Date'].min()
-                    well_df['months_from_start'] = ((well_df['Date'] - well_min_date).dt.days / 30.42).astype(int)
+                    # Keep fractional months to preserve day-of-month variation
+                    well_df['months_from_start'] = (well_df['Date'] - well_min_date).dt.days / 30.42
                     # Only keep data up to the max normalized month
                     well_df = well_df[well_df['months_from_start'] <= max_month_normalized]
                     normalized_wells.append(well_df)

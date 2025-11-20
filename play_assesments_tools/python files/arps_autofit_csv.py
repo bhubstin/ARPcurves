@@ -311,34 +311,25 @@ def fit_arps_curve(
 
 
 def fit_aggregate_arps_curve(
-    measure,
-    b_dict,
-    dei_dict,
-    def_dict,
-    min_q_dict,
-    prod_df_all_wells,
-    value_col,
-    method='curve_fit',
-    trials=1000,
-    smoothing_factor=2
+    prod_df_all_wells, measure, value_col, dei_dict, def_dict, b_dict,
+    method='curve_fit', trials=100, smoothing_factor=0, time_normalize=False
 ):
     """
-    Fit Arps decline curve to AGGREGATED production from multiple wells.
+    Fit an aggregate ARPS curve by averaging production across all wells.
     
-    This creates a "type curve" by averaging production across all wells
-    by time period, then fitting one ARPS curve to the averaged data.
+    This creates a "type curve" representing average well behavior.
     
     Args:
-        measure: Product type (OIL, GAS, WATER)
-        b_dict: b-factor bounds and guess
-        dei_dict: Initial decline rate bounds
-        def_dict: Terminal decline rates by phase
-        min_q_dict: Abandonment rates by phase
-        prod_df_all_wells: Production DataFrame with ALL wells
+        prod_df_all_wells: DataFrame with all wells' production data
+        measure: Product type (OIL/GAS/WATER)
         value_col: Column name for production values
+        dei_dict: Initial decline parameters
+        def_dict: Terminal decline parameters
+        b_dict: b-factor parameters
         method: Fitting method
         trials: Number of iterations for optimization
         smoothing_factor: Smoothing iterations
+        time_normalize: If True, shift each well to start at Month 0 before aggregating
         
     Returns:
         Tuple: (result_list, aggregated_df)
@@ -358,9 +349,21 @@ def fit_aggregate_arps_curve(
     if df.empty:
         return None, None
     
-    # Normalize time: assign month index starting from earliest date across all wells
-    min_date = df['Date'].min()
-    df['months_from_start'] = ((df['Date'] - min_date).dt.days / 30.42).astype(int)
+    if time_normalize:
+        # Time-normalize: shift each well to start at Month 0
+        # This is the proper way to create type curves with staggered starts
+        normalized_data = []
+        for well_id in df['WellID'].unique():
+            well_df = df[df['WellID'] == well_id].copy()
+            well_df = well_df.sort_values('Date')
+            well_min_date = well_df['Date'].min()
+            well_df['months_from_start'] = ((well_df['Date'] - well_min_date).dt.days / 30.42).astype(int)
+            normalized_data.append(well_df)
+        df = pd.concat(normalized_data, ignore_index=True)
+    else:
+        # Calendar time: assign month index starting from earliest date across all wells
+        min_date = df['Date'].min()
+        df['months_from_start'] = ((df['Date'] - min_date).dt.days / 30.42).astype(int)
     
     # Average production across all wells for each month
     # This is the key step for type curve analysis

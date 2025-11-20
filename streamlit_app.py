@@ -212,6 +212,12 @@ st.markdown("""
         background: linear-gradient(90deg, transparent, #bdc4d0, transparent);
     }
     
+    /* Hide main header on analysis pages */
+    .hide-header .main-header,
+    .hide-header .sub-header {
+        display: none !important;
+    }
+    
     /* Subheaders */
     h2, h3 {
         font-family: 'Open Sans', sans-serif;
@@ -253,6 +259,32 @@ st.markdown("""
     [data-testid="stAlertContentInfo"] div,
     [data-testid="stAlertContentInfo"] li {
         color: #103766 !important;
+        font-size: 0.95rem !important;
+        line-height: 1.6 !important;
+    }
+    
+    [data-testid="stAlertContentInfo"] strong {
+        font-weight: 600 !important;
+        font-size: 0.95rem !important;
+        color: #103766 !important;
+    }
+    
+    [data-testid="stAlertContentInfo"] code {
+        font-family: 'Consolas', 'Monaco', 'Courier New', monospace !important;
+        font-size: 0.9rem !important;
+        background-color: rgba(16, 55, 102, 0.08) !important;
+        padding: 2px 6px !important;
+        border-radius: 3px !important;
+        color: #103766 !important;
+    }
+    
+    [data-testid="stAlertContentInfo"] ul {
+        margin: 0.5rem 0 !important;
+        padding-left: 1.5rem !important;
+    }
+    
+    [data-testid="stAlertContentInfo"] li {
+        margin: 0.4rem 0 !important;
     }
     
     /* Success alerts */
@@ -312,45 +344,129 @@ st.markdown("""
     .streamlit-expanderContent p, .streamlit-expanderContent div {
         color: #2c3e50 !important;
     }
+    
+    /* ============================================ */
+    /* MOBILE RESPONSIVE STYLES */
+    /* ============================================ */
+    
+    /* Mobile: screens smaller than 768px */
+    @media (max-width: 768px) {
+        /* Reduce header sizes */
+        .main-header {
+            font-size: 2rem !important;
+            padding: 1rem 0 0.5rem 0 !important;
+        }
+        
+        .sub-header {
+            font-size: 0.9rem !important;
+            margin-bottom: 1.5rem !important;
+        }
+        
+        /* Reduce padding on mobile */
+        .main .block-container {
+            padding-top: 1rem !important;
+            padding-bottom: 1rem !important;
+            padding-left: 1rem !important;
+            padding-right: 1rem !important;
+        }
+        
+        /* Make buttons full width */
+        .stButton > button {
+            width: 100% !important;
+            padding: 0.75rem 1rem !important;
+            font-size: 0.9rem !important;
+        }
+        
+        /* Stack metrics vertically */
+        [data-testid="stMetricValue"] {
+            font-size: 1.5rem !important;
+        }
+        
+        [data-testid="stMetricLabel"] {
+            font-size: 0.8rem !important;
+        }
+        
+        /* Reduce chart height on mobile */
+        .js-plotly-plot {
+            max-height: 400px !important;
+        }
+        
+        /* Make sidebar toggle more prominent */
+        [data-testid="stSidebarNav"] {
+            font-size: 1.1rem !important;
+        }
+        
+        /* Improve touch targets */
+        .stSelectbox, .stSlider, .stCheckbox {
+            min-height: 44px !important;
+        }
+        
+        /* Reduce table height on mobile */
+        .dataframe {
+            max-height: 300px !important;
+            overflow-y: auto !important;
+        }
+    }
+    
+    /* Tablet: screens between 768px and 1024px */
+    @media (min-width: 768px) and (max-width: 1024px) {
+        .main-header {
+            font-size: 2.5rem !important;
+        }
+        
+        .main .block-container {
+            padding-left: 1.5rem !important;
+            padding-right: 1.5rem !important;
+        }
+    }
 </style>
 """, unsafe_allow_html=True)
 
-# Initialize session state
+# Helper functions
+def get_default_index(selected_value, available_values):
+    """
+    Get the index of a selected value in available values.
+    Returns 0 if not found or if selected_value is None.
+    
+    Args:
+        selected_value: The value to find
+        available_values: Array-like of available values
+        
+    Returns:
+        int: Index of selected_value in available_values, or 0 if not found
+    """
+    if selected_value is None:
+        return 0
+    try:
+        return list(available_values).index(selected_value)
+    except (ValueError, AttributeError):
+        return 0
+
+
 def init_session_state():
     """Initialize all session state variables."""
-    if 'uploaded_file' not in st.session_state:
-        st.session_state.uploaded_file = None
-    if 'production_df' not in st.session_state:
-        st.session_state.production_df = None
-    if 'well_list_df' not in st.session_state:
-        st.session_state.well_list_df = None
-    if 'csv_loader' not in st.session_state:
-        st.session_state.csv_loader = None
-    if 'results_df' not in st.session_state:
-        st.session_state.results_df = None
-    if 'data_valid' not in st.session_state:
-        st.session_state.data_valid = False
-    if 'analysis_complete' not in st.session_state:
-        st.session_state.analysis_complete = False
-    if 'selected_well' not in st.session_state:
-        st.session_state.selected_well = None
-    if 'selected_measure' not in st.session_state:
-        st.session_state.selected_measure = None
-    if 'aggregate_data' not in st.session_state:
-        st.session_state.aggregate_data = {}
+    defaults = {
+        'uploaded_file': None,
+        'production_df': None,
+        'well_list_df': None,
+        'csv_loader': None,
+        'results_df': None,
+        'data_valid': False,
+        'analysis_complete': False,
+        'selected_well': None,
+        'selected_measure': None,
+        'aggregate_data': {},
+        'auto_navigate_to_viz': False
+    }
+    
+    for key, default_value in defaults.items():
+        if key not in st.session_state:
+            st.session_state[key] = default_value
 
 init_session_state()
 
-# Header
-st.markdown('<div class="main-header">Production Decline Analysis Platform</div>', unsafe_allow_html=True)
-st.markdown('<div class="sub-header">Advanced Arps Decline Curve Modeling & Forecasting</div>', unsafe_allow_html=True)
-
 # Sidebar navigation
 st.sidebar.title("Navigation")
-
-# Check for auto-navigation trigger
-if 'auto_navigate_to_viz' not in st.session_state:
-    st.session_state.auto_navigate_to_viz = False
 
 # Auto-navigate to visualization if triggered
 if st.session_state.auto_navigate_to_viz:
@@ -401,6 +517,10 @@ with st.sidebar.expander("📥 Download Sample Data"):
 # ============================================================================
 
 if page == "📤 Upload Data":
+    # Show header only on upload page
+    st.markdown('<div class="main-header">Production Decline Analysis Platform</div>', unsafe_allow_html=True)
+    st.markdown('<div class="sub-header">Advanced Arps Decline Curve Modeling & Forecasting</div>', unsafe_allow_html=True)
+    
     st.header("📤 Upload Production Data")
     
     st.markdown("""
@@ -469,19 +589,6 @@ if page == "📤 Upload Data":
                     use_container_width=True,
                     height=400
                 )
-                
-                # Show measure breakdown
-                st.subheader("📈 Production by Measure")
-                measure_counts = production_df['Measure'].value_counts()
-                
-                col_x, col_y = st.columns(2)
-                
-                with col_x:
-                    st.dataframe(measure_counts, use_container_width=True)
-                
-                with col_y:
-                    # Simple bar chart
-                    st.bar_chart(measure_counts)
                 
                 # Data quality checks
                 st.subheader("✅ Data Quality Checks")
@@ -653,11 +760,29 @@ elif page == "📊 Run Analysis":
             st.info("📊 **Individual Wells Analysis**: Each well will be analyzed separately. "
                     "You'll get unique decline curves for each well/measure combination. "
                     f"Total analyses to run: {len(well_list_df)}")
+            time_normalize = False  # Not applicable for individual wells
         else:
             measures = well_list_df['Measure'].unique()
             st.success("📈 **Aggregate/Type Curve Analysis**: Production will be averaged across all wells by month. "
                        f"You'll get one representative curve per measure ({', '.join(measures)}). "
                        f"Analyzing {total_wells_in_data} wells combined.")
+            
+            st.write("DEBUG: About to show checkbox")  # DEBUG LINE
+            
+            # Time normalization option for aggregate analysis
+            time_normalize = st.checkbox(
+                "⏱️ Time-Normalize Wells (Recommended for Staggered Start Dates)",
+                value=False,
+                help="Shift each well to start at Month 0 before averaging. This creates a true 'type curve' "
+                     "representing average well decline behavior, rather than field-level production ramp-up."
+            )
+            
+            if time_normalize:
+                st.info("🔄 **Time-Normalized Mode**: Each well will be shifted to Month 0. "
+                        "The resulting curve shows average well decline behavior.")
+            else:
+                st.info("📅 **Calendar Time Mode**: Wells averaged by calendar month. "
+                        "Shows field-level production including ramp-up from staggered starts.")
         
         st.markdown("---")
         
@@ -740,16 +865,16 @@ elif page == "📊 Run Analysis":
                     status_text.text(f"Fitting aggregate curve for {measure}...")
                     
                     result, agg_df = fit_aggregate_arps_curve(
+                        prod_df_all_wells=prod_df,
                         measure=measure,
-                        b_dict=arps_module.default_b_dict[measure],
+                        value_col='Value',
                         dei_dict=arps_module.dei_dict1,
                         def_dict=arps_module.def_dict,
-                        min_q_dict=arps_module.min_q_dict,
-                        prod_df_all_wells=prod_df,
-                        value_col='Value',
+                        b_dict=arps_module.default_b_dict[measure],
                         method=fit_method,
                         trials=arps_module.trials,
-                        smoothing_factor=arps_module.smoothing_params['factor']
+                        smoothing_factor=arps_module.smoothing_params['factor'],
+                        time_normalize=time_normalize
                     )
                     
                     if result is not None:
@@ -804,7 +929,19 @@ elif page == "📊 Run Analysis":
             
             # Success message with auto-navigation prompt
             st.success(f"✅ Analysis complete! Processed {len(results_df)} wells.")
-            st.balloons()  # Celebration effect!
+            
+            # Add anchor and auto-scroll to results
+            st.markdown('<div id="results-section"></div>', unsafe_allow_html=True)
+            st.markdown("""
+                <script>
+                    setTimeout(function() {
+                        const element = document.getElementById('results-section');
+                        if (element) {
+                            element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    }, 100);
+                </script>
+            """, unsafe_allow_html=True)
             
             # Show summary
             st.subheader("📊 Results Summary")
@@ -839,16 +976,16 @@ elif page == "📊 Run Analysis":
                 height=400
             )
             
-            # Next step - Auto-navigation button
+            # Next step - Quick access to visualization
             st.markdown("---")
             
             col_nav1, col_nav2 = st.columns([1, 1])
             with col_nav1:
-                if st.button("📈 View Charts Now", type="primary", use_container_width=True):
+                if st.button("📈 View Interactive Charts", type="primary", use_container_width=True, key="view_charts_btn"):
                     st.session_state.auto_navigate_to_viz = True
                     st.rerun()
             with col_nav2:
-                st.info("👈 Or use sidebar to navigate")
+                st.info("Charts show first well automatically")
         
         # Show existing results if available
         elif st.session_state.analysis_complete:
@@ -885,35 +1022,33 @@ elif page == "📈 Visualize Results":
         well_list_df = st.session_state.well_list_df
         
         # Check if this is aggregate analysis
-        is_aggregate = 'AGGREGATE' in results_df['WellID'].values
+        # Check both WellID column and if aggregate_data exists in session state
+        is_aggregate = ('AGGREGATE' in results_df['WellID'].values) or \
+                       ('aggregate_data' in st.session_state and len(st.session_state.aggregate_data) > 0)
+        
+        # Debug: Show detection status
+        if is_aggregate:
+            st.sidebar.success("🔍 Aggregate mode detected")
         
         # Sidebar controls
         if is_aggregate:
             st.sidebar.header("🎯 Select Product")
             # For aggregate, only select measure
             available_measures = results_df['Measure'].unique()
-            
-            # Use pre-selected measure if available, otherwise default to first
-            default_measure_idx = 0
-            if st.session_state.selected_measure and st.session_state.selected_measure in available_measures:
-                default_measure_idx = list(available_measures).index(st.session_state.selected_measure)
+            default_measure_idx = get_default_index(st.session_state.selected_measure, available_measures)
             
             selected_measure = st.sidebar.selectbox(
                 "Product",
                 available_measures,
                 index=default_measure_idx,
-                key="viz_measure_select"
+                key="viz_measure_select_agg"
             )
             selected_well = 'AGGREGATE'
         else:
             st.sidebar.header("🎯 Select Well")
             # Well selection
             unique_wells = results_df['WellID'].unique()
-            
-            # Use pre-selected well if available, otherwise default to first
-            default_well_idx = 0
-            if st.session_state.selected_well and st.session_state.selected_well in unique_wells:
-                default_well_idx = list(unique_wells).index(st.session_state.selected_well)
+            default_well_idx = get_default_index(st.session_state.selected_well, unique_wells)
             
             selected_well = st.sidebar.selectbox(
                 "Well ID",
@@ -927,17 +1062,13 @@ elif page == "📈 Visualize Results":
             
             # Measure selection
             available_measures = well_results['Measure'].unique()
-            
-            # Use pre-selected measure if available, otherwise default to first
-            default_measure_idx = 0
-            if st.session_state.selected_measure and st.session_state.selected_measure in available_measures:
-                default_measure_idx = list(available_measures).index(st.session_state.selected_measure)
+            default_measure_idx = get_default_index(st.session_state.selected_measure, available_measures)
             
             selected_measure = st.sidebar.selectbox(
                 "Product",
                 available_measures,
                 index=default_measure_idx,
-                key="viz_measure_select"
+                key="viz_measure_select_ind"
             )
         
         st.sidebar.markdown("---")
@@ -1014,18 +1145,18 @@ elif page == "📈 Visualize Results":
                 col_prev, col_next = st.columns(2)
                 with col_prev:
                     if current_idx > 0:
-                        if st.button("⬅️ Previous", use_container_width=True):
+                        if st.button("⬅️ Previous", use_container_width=True, key="prev_well_btn"):
                             st.session_state.selected_well = unique_wells_list[current_idx - 1]
                             st.rerun()
                     else:
-                        st.button("⬅️ Previous", use_container_width=True, disabled=True)
+                        st.button("⬅️ Previous", use_container_width=True, disabled=True, key="prev_well_btn_disabled")
                 with col_next:
                     if current_idx < len(unique_wells_list) - 1:
-                        if st.button("Next ➡️", use_container_width=True):
+                        if st.button("Next ➡️", use_container_width=True, key="next_well_btn"):
                             st.session_state.selected_well = unique_wells_list[current_idx + 1]
                             st.rerun()
                     else:
-                        st.button("Next ➡️", use_container_width=True, disabled=True)
+                        st.button("Next ➡️", use_container_width=True, disabled=True, key="next_well_btn_disabled")
         
         # Display metrics
         title = f"📊 Aggregate Type Curve - {selected_measure}" if is_aggregate else f"📊 Well {selected_well} - {selected_measure}"

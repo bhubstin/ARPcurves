@@ -623,6 +623,10 @@ elif page == "📊 Run Analysis":
         # Load well list from session state first
         well_list_df = st.session_state.well_list_df
         
+        # Load production data to get accurate well count
+        prod_df = st.session_state.csv_loader.load_production_data()
+        total_wells_in_data = prod_df['WellID'].nunique()
+        
         # STEP 1: Analysis Type Selection
         st.subheader("🎯 Step 1: Select Analysis Type")
         
@@ -644,7 +648,7 @@ elif page == "📊 Run Analysis":
             measures = well_list_df['Measure'].unique()
             st.success("📈 **Aggregate/Type Curve Analysis**: Production will be averaged across all wells by month. "
                        f"You'll get one representative curve per measure ({', '.join(measures)}). "
-                       f"Analyzing {well_list_df['WellID'].nunique()} wells combined.")
+                       f"Analyzing {total_wells_in_data} wells combined.")
         
         st.markdown("---")
         

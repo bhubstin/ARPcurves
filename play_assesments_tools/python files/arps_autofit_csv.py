@@ -485,7 +485,9 @@ def fit_aggregate_arps_curve(
         return result_list, aggregated
         
     except Exception as e:
-        print(f"  Failed aggregate fit with error: {e}")
+        print(f"  ❌ EXCEPTION in aggregate fit for {measure}: {e}")
+        import traceback
+        print(traceback.format_exc())
         return None, aggregated
 
 

@@ -620,6 +620,9 @@ elif page == "📊 Run Analysis":
             )
         
         # Main content area
+        # Load well list from session state first
+        well_list_df = st.session_state.well_list_df
+        
         # STEP 1: Analysis Type Selection
         st.subheader("🎯 Step 1: Select Analysis Type")
         
@@ -654,7 +657,6 @@ elif page == "📊 Run Analysis":
             st.write("**Well List:**")
             
             # Show well list
-            well_list_df = st.session_state.well_list_df
             st.dataframe(
                 well_list_df[['WellID', 'Measure', 'LastProdDate']],
                 use_container_width=True,

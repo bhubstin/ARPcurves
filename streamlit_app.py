@@ -892,9 +892,16 @@ elif page == "📈 Visualize Results":
             st.sidebar.header("🎯 Select Product")
             # For aggregate, only select measure
             available_measures = results_df['Measure'].unique()
+            
+            # Use pre-selected measure if available, otherwise default to first
+            default_measure_idx = 0
+            if st.session_state.selected_measure and st.session_state.selected_measure in available_measures:
+                default_measure_idx = list(available_measures).index(st.session_state.selected_measure)
+            
             selected_measure = st.sidebar.selectbox(
                 "Product",
                 available_measures,
+                index=default_measure_idx,
                 key="viz_measure_select"
             )
             selected_well = 'AGGREGATE'
@@ -902,9 +909,16 @@ elif page == "📈 Visualize Results":
             st.sidebar.header("🎯 Select Well")
             # Well selection
             unique_wells = results_df['WellID'].unique()
+            
+            # Use pre-selected well if available, otherwise default to first
+            default_well_idx = 0
+            if st.session_state.selected_well and st.session_state.selected_well in unique_wells:
+                default_well_idx = list(unique_wells).index(st.session_state.selected_well)
+            
             selected_well = st.sidebar.selectbox(
                 "Well ID",
                 unique_wells,
+                index=default_well_idx,
                 key="viz_well_select"
             )
             
@@ -913,9 +927,16 @@ elif page == "📈 Visualize Results":
             
             # Measure selection
             available_measures = well_results['Measure'].unique()
+            
+            # Use pre-selected measure if available, otherwise default to first
+            default_measure_idx = 0
+            if st.session_state.selected_measure and st.session_state.selected_measure in available_measures:
+                default_measure_idx = list(available_measures).index(st.session_state.selected_measure)
+            
             selected_measure = st.sidebar.selectbox(
                 "Product",
                 available_measures,
+                index=default_measure_idx,
                 key="viz_measure_select"
             )
         
@@ -970,6 +991,41 @@ elif page == "📈 Visualize Results":
                 last_prod_date=well_list_row['LastProdDate'],
                 fit_months=120
             )
+        
+        # Quick navigation hint and controls at top
+        col_info, col_nav = st.columns([2, 1])
+        
+        with col_info:
+            if is_aggregate:
+                st.info(f"📈 Viewing aggregate type curve for **{selected_measure}**")
+            else:
+                total_wells = len(results_df['WellID'].unique())
+                st.info(f"📈 Viewing well **{selected_well}** - **{selected_measure}** ({total_wells} wells analyzed)")
+        
+        with col_nav:
+            # Quick navigation buttons
+            if not is_aggregate and len(results_df['WellID'].unique()) > 1:
+                unique_wells_list = list(results_df['WellID'].unique())
+                try:
+                    current_idx = unique_wells_list.index(selected_well)
+                except ValueError:
+                    current_idx = 0
+                
+                col_prev, col_next = st.columns(2)
+                with col_prev:
+                    if current_idx > 0:
+                        if st.button("⬅️ Previous", use_container_width=True):
+                            st.session_state.selected_well = unique_wells_list[current_idx - 1]
+                            st.rerun()
+                    else:
+                        st.button("⬅️ Previous", use_container_width=True, disabled=True)
+                with col_next:
+                    if current_idx < len(unique_wells_list) - 1:
+                        if st.button("Next ➡️", use_container_width=True):
+                            st.session_state.selected_well = unique_wells_list[current_idx + 1]
+                            st.rerun()
+                    else:
+                        st.button("Next ➡️", use_container_width=True, disabled=True)
         
         # Display metrics
         title = f"📊 Aggregate Type Curve - {selected_measure}" if is_aggregate else f"📊 Well {selected_well} - {selected_measure}"
@@ -1044,20 +1100,13 @@ elif page == "📈 Visualize Results":
                         y=well_data['Value'],
                         mode='markers',
                         name=f'Well {well_id}',
-                        marker=dict(size=6, opacity=0.4),
+                        marker=dict(size=6, opacity=0.3),
                         showlegend=False,
                         hovertemplate=f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
                     ))
                 
-                # Add averaged data as a distinct trace
-                fig_linear.add_trace(go.Scatter(
-                    x=[forecast_dates[int(m)] for m in agg_df['months_from_start']],
-                    y=agg_df['avg_production'],
-                    mode='markers',
-                    name='Average Production',
-                    marker=dict(size=10, color='#2E86AB', symbol='diamond', line=dict(width=2, color='white')),
-                    hovertemplate='Month: %{x}<br>Avg Rate: %{y:.1f}<extra></extra>'
-                ))
+                # NOTE: Averaged data points removed - the fitted ARPS curve represents the average
+                # The curve is fitted to the monthly averages, so showing both is redundant
             else:
                 # Individual well: plot single well data
                 fig_linear.add_trace(go.Scatter(
@@ -1122,16 +1171,6 @@ elif page == "📈 Visualize Results":
                         showlegend=False,
                         hovertemplate=f'Well {well_id}<br>Date: %{{x}}<br>Rate: %{{y:.1f}}<extra></extra>'
                     ))
-                
-                # Add averaged data as a distinct trace
-                fig_log.add_trace(go.Scatter(
-                    x=[forecast_dates[int(m)] for m in agg_df['months_from_start']],
-                    y=agg_df['avg_production'],
-                    mode='markers',
-                    name='Average Production',
-                    marker=dict(size=10, color='#2E86AB', symbol='diamond', line=dict(width=2, color='white')),
-                    hovertemplate='Month: %{x}<br>Avg Rate: %{y:.1f}<extra></extra>'
-                ))
             else:
                 # Individual well: plot single well data
                 fig_log.add_trace(go.Scatter(

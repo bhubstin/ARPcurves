@@ -562,16 +562,6 @@ elif page == "📊 Run Analysis":
         # Sidebar controls
         st.sidebar.header("⚙️ Analysis Parameters")
         
-        # Analysis type selector
-        analysis_type = st.sidebar.radio(
-            "Analysis Type",
-            ["Individual Wells", "Aggregate/Type Curve"],
-            index=0,
-            help="Individual: Fit each well separately. Aggregate: Average all wells and fit one curve."
-        )
-        
-        st.sidebar.markdown("---")
-        
         # Fitting method
         fit_method = st.sidebar.selectbox(
             "Fitting Method",
@@ -630,10 +620,38 @@ elif page == "📊 Run Analysis":
             )
         
         # Main content area
+        # STEP 1: Analysis Type Selection
+        st.subheader("🎯 Step 1: Select Analysis Type")
+        
+        # Analysis type selector - PROMINENT in main content
+        analysis_type = st.radio(
+            "Choose your analysis approach:",
+            ["Individual Wells", "Aggregate/Type Curve"],
+            index=0,
+            horizontal=True,
+            help="Individual: Fit each well separately. Aggregate: Average all wells and fit one curve."
+        )
+        
+        # Show contextual info based on selection
+        if analysis_type == "Individual Wells":
+            st.info("📊 **Individual Wells Analysis**: Each well will be analyzed separately. "
+                    "You'll get unique decline curves for each well/measure combination. "
+                    f"Total analyses to run: {len(well_list_df)}")
+        else:
+            measures = well_list_df['Measure'].unique()
+            st.success("📈 **Aggregate/Type Curve Analysis**: Production will be averaged across all wells by month. "
+                       f"You'll get one representative curve per measure ({', '.join(measures)}). "
+                       f"Analyzing {well_list_df['WellID'].nunique()} wells combined.")
+        
+        st.markdown("---")
+        
+        # STEP 2: Review Data
+        st.subheader("📋 Step 2: Review Wells to Analyze")
+        
         col1, col2 = st.columns([2, 1])
         
         with col1:
-            st.subheader("📋 Wells to Analyze")
+            st.write("**Well List:**")
             
             # Show well list
             well_list_df = st.session_state.well_list_df
@@ -656,6 +674,9 @@ elif page == "📊 Run Analysis":
                 st.write(f"**{measure}:** {count}")
         
         st.markdown("---")
+        
+        # STEP 3: Run Analysis
+        st.subheader("🚀 Step 3: Run Analysis")
         
         # Clear cache button if analysis already complete
         if st.session_state.analysis_complete:
